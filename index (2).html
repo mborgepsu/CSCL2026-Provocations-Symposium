@@ -1,0 +1,1459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Revisiting Wise & Schwarz's Provocations for CSCL</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/topojson/3.0.2/topojson.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+:root{
+  --ink:#1a1714;--ink-mid:#4a4540;--ink-light:#8a8078;
+  --cream:#faf8f3;--cream-mid:#f0ede4;--cream-dark:#e4dfd0;
+  --gold:#b8933a;--gold-light:#d4a94e;--gold-pale:#f5ecd4;
+  --teal:#2a6b6b;--teal-light:#3a8c8c;--teal-pale:#e0f0f0;
+  --coral:#c4503a;
+  --serif:'Playfair Display',Georgia,serif;
+  --sans:'DM Sans',system-ui,sans-serif;
+  --mono:'DM Mono',monospace;
+  --r:4px;--rlg:12px;
+  --shadow:0 2px 24px rgba(26,23,20,.08);
+  --shadow-lg:0 8px 48px rgba(26,23,20,.14);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:var(--sans);background:var(--cream);color:var(--ink);line-height:1.7;overflow-x:hidden}
+
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(250,248,243,.94);backdrop-filter:blur(12px);border-bottom:1px solid var(--cream-dark);padding:0 2rem;display:flex;align-items:center;justify-content:space-between;height:60px}
+.nav-logo{font-family:var(--serif);font-size:13px;color:var(--ink-mid);max-width:300px;line-height:1.3;font-style:italic}
+.nav-links{display:flex;gap:2rem;list-style:none}
+.nav-links a{font-size:12px;font-weight:500;color:var(--ink-mid);text-decoration:none;letter-spacing:.06em;text-transform:uppercase;transition:color .2s}
+.nav-links a:hover{color:var(--gold)}
+
+/* HERO */
+.hero{min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--ink);color:#fff;padding:80px 2rem 5rem;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 18% 55%,rgba(184,147,58,.15) 0%,transparent 58%),radial-gradient(ellipse at 82% 30%,rgba(42,107,107,.1) 0%,transparent 50%)}
+.hero-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px);background-size:60px 60px}
+.hero-inner{position:relative;max-width:920px;text-align:center}
+.eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.15em;text-transform:uppercase;color:var(--gold-light);margin-bottom:2rem;display:flex;align-items:center;justify-content:center;gap:1rem}
+.eyebrow::before,.eyebrow::after{content:'';width:36px;height:1px;background:var(--gold-light);opacity:.5}
+h1.hero-title{font-family:var(--serif);font-size:clamp(2rem,5vw,3.6rem);font-weight:700;line-height:1.12;margin-bottom:1.25rem}
+h1.hero-title em{font-style:italic;color:var(--gold-light)}
+.hero-subtitle{font-family:var(--serif);font-size:clamp(1.1rem,2.5vw,1.5rem);font-weight:400;font-style:italic;color:rgba(255,255,255,.6);margin-bottom:2.5rem}
+.hero-abstract{font-size:15px;font-weight:300;color:rgba(255,255,255,.55);max-width:680px;margin:0 auto 3rem;line-height:1.8}
+.hero-authors{display:flex;flex-wrap:wrap;gap:.4rem 1.25rem;justify-content:center;margin-bottom:3rem}
+.hero-authors span{font-family:var(--serif);font-style:italic;font-size:14px;color:rgba(255,255,255,.55)}
+.hero-authors .co-chair{color:rgba(255,255,255,.75);font-weight:600}
+.btn-row{display:flex;gap:.875rem;justify-content:center;flex-wrap:wrap;margin-bottom:2.5rem}
+.btn{display:inline-flex;align-items:center;gap:7px;padding:11px 22px;border-radius:var(--r);font-family:var(--sans);font-size:13px;font-weight:500;cursor:pointer;text-decoration:none;transition:all .2s;border:1px solid transparent;letter-spacing:.02em}
+.btn-gold{background:var(--gold);color:#fff;border-color:var(--gold)}
+.btn-gold:hover{background:var(--gold-light);transform:translateY(-1px)}
+.btn-outline{background:transparent;color:rgba(255,255,255,.7);border-color:rgba(255,255,255,.22)}
+.btn-outline:hover{background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.4)}
+.scroll-cue{margin-top:.5rem;display:flex;flex-direction:column;align-items:center;gap:8px;color:rgba(255,255,255,.3);font-size:11px;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase}
+.scroll-line{width:1px;height:48px;background:linear-gradient(to bottom,rgba(255,255,255,.3),transparent);animation:sp 2s ease-in-out infinite}
+@keyframes sp{0%,100%{opacity:.4}50%{opacity:1}}
+
+/* SECTIONS */
+section{padding:6rem 2rem;position:relative}
+.inner{max-width:1100px;margin:0 auto}
+.sk{font-family:var(--mono);font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--gold);margin-bottom:.875rem}
+.sh{font-family:var(--serif);font-size:clamp(1.75rem,3.5vw,2.6rem);font-weight:700;line-height:1.15;color:var(--ink);margin-bottom:1.25rem}
+.sdesc{font-size:16px;color:var(--ink-mid);max-width:620px;line-height:1.8;margin-bottom:3rem;font-weight:300}
+.rule{width:44px;height:3px;background:var(--gold);margin-bottom:2rem}
+
+/* PAPER */
+#paper{background:#fff}
+.paper-layout{display:grid;grid-template-columns:260px 1fr;gap:3rem;align-items:start}
+@media(max-width:860px){.paper-layout{grid-template-columns:1fr}}
+.paper-side{position:sticky;top:76px}
+.pmeta-card{background:var(--cream);border:1px solid var(--cream-dark);border-radius:var(--rlg);padding:1.75rem;margin-bottom:1.25rem;box-shadow:var(--shadow)}
+.mrow{margin-bottom:1rem;padding-bottom:1rem;border-bottom:1px solid var(--cream-dark)}
+.mrow:last-child{margin-bottom:0;padding-bottom:0;border-bottom:none}
+.mk{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-light);display:block;margin-bottom:4px}
+.mv{font-size:13px;color:var(--ink);font-weight:500;line-height:1.5}
+.achip{display:flex;align-items:baseline;gap:6px;font-size:12px;color:var(--ink-mid);margin-top:5px;line-height:1.4}
+.achip::before{content:'';width:4px;height:4px;border-radius:50%;background:var(--gold);opacity:.6;flex-shrink:0;margin-top:5px}
+.achip .role-note{font-size:10px;color:var(--ink-light);font-family:var(--mono)}
+.paper-embed-wrap{background:var(--cream);border:1px solid var(--cream-dark);border-radius:var(--rlg);overflow:hidden;box-shadow:var(--shadow);display:flex;flex-direction:column;min-height:820px}
+.etb{padding:11px 16px;border-bottom:1px solid var(--cream-dark);display:flex;align-items:center;justify-content:space-between;background:var(--ink)}
+.edots{display:flex;gap:5px}
+.edots span{width:10px;height:10px;border-radius:50%}
+.edots span:nth-child(1){background:#e85d4a}.edots span:nth-child(2){background:#e8c547}.edots span:nth-child(3){background:#38b2a0}
+.etitle{font-family:var(--mono);font-size:11px;color:rgba(255,255,255,.4)}
+.elink a{font-size:11px;color:var(--gold-light);text-decoration:none;font-family:var(--mono)}
+.elink a:hover{text-decoration:underline}
+.gdoc-frame{flex:1;border:none;width:100%;min-height:760px;background:#fff}
+
+/* PROVOCATIONS PREVIEW */
+#provocations{background:var(--cream-mid);border-top:1px solid var(--cream-dark)}
+.prov-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:1.5rem}
+.prov-card{background:#fff;border:1px solid var(--cream-dark);border-radius:var(--rlg);padding:1.75rem;box-shadow:var(--shadow);transition:all .3s;position:relative;overflow:hidden}
+.prov-card:hover{box-shadow:var(--shadow-lg);transform:translateY(-2px);border-color:var(--gold)}
+.prov-card::before{content:'';position:absolute;top:0;left:0;width:4px;height:100%;background:var(--gold);opacity:0;transition:opacity .3s}
+.prov-card:hover::before{opacity:1}
+.prov-num{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:.75rem}
+.prov-title{font-family:var(--serif);font-size:1rem;font-weight:700;line-height:1.3;color:var(--ink);margin-bottom:.75rem}
+.prov-author{font-family:var(--mono);font-size:10px;letter-spacing:.08em;color:var(--ink-light);margin-bottom:.875rem}
+.prov-excerpt{font-size:13px;color:var(--ink-mid);line-height:1.7}
+
+/* VIDEOS */
+#videos{background:var(--ink);color:#fff;border-top:1px solid rgba(255,255,255,.06)}
+#videos .sh{color:#fff}
+#videos .sdesc{color:rgba(255,255,255,.5)}
+#videos .sk{color:var(--gold-light)}
+#videos .rule{background:var(--gold-light)}
+.vgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:2rem}
+.vcard{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.09);border-radius:var(--rlg);display:flex;flex-direction:column;gap:0}
+.vcard-label{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;font-weight:500;padding:.9rem 1.1rem .2rem}
+.vcard-title{font-family:var(--serif);font-size:.95rem;font-weight:700;color:#fff;line-height:1.35;padding:0 1.1rem .25rem}
+.vcard-speakers{font-size:11px;color:rgba(255,255,255,.45);padding:0 1.1rem .8rem;font-family:var(--mono)}
+.vembed{width:100%;aspect-ratio:16/9;border-radius:0 0 var(--rlg) var(--rlg);overflow:hidden}
+.vembed iframe{display:block;width:100%;height:100%;border:none}
+.vtag{display:inline-flex;align-items:center;gap:5px;margin-top:6px;font-size:9px;font-family:var(--mono);letter-spacing:.08em;text-transform:uppercase;padding:4px 9px;border-radius:3px;align-self:flex-start}
+.vcard-note{font-family:var(--mono);font-size:11px;color:rgba(255,255,255,.3);margin-top:1.5rem;letter-spacing:.05em}
+
+/* CHALLENGE */
+#challenge{background:var(--cream)}
+.cgrid{display:grid;grid-template-columns:1fr 1fr;gap:3.5rem;align-items:start}
+@media(max-width:900px){.cgrid{grid-template-columns:1fr}}
+.fcard{background:#fff;border:1px solid var(--cream-dark);border-radius:var(--rlg);padding:2.5rem;box-shadow:var(--shadow);position:sticky;top:76px}
+.fcard h3{font-family:var(--serif);font-size:1.4rem;margin-bottom:.5rem}
+.fsub{font-size:14px;color:var(--ink-light);margin-bottom:2rem;line-height:1.65}
+.fg{margin-bottom:1.2rem}
+.fg label{display:block;font-size:12px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-light);margin-bottom:6px;font-family:var(--mono)}
+.fg input,.fg select,.fg textarea{width:100%;padding:10px 14px;background:var(--cream);border:1px solid var(--cream-dark);border-radius:var(--r);font-family:var(--sans);font-size:14px;color:var(--ink);outline:none;transition:all .2s;resize:vertical}
+.fg textarea{min-height:115px}
+.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(184,147,58,.1);background:#fff}
+.fg select option{background:#fff}
+.ccount{text-align:right;font-size:11px;color:var(--ink-light);font-family:var(--mono);margin-top:4px}
+.sbtn{width:100%;padding:14px;background:var(--ink);color:#fff;border:none;border-radius:var(--r);font-family:var(--serif);font-size:15px;font-weight:600;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px}
+.sbtn:hover:not(:disabled){background:var(--gold);transform:translateY(-1px)}
+.sbtn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.sbnr{display:none;margin-top:1rem;padding:12px 16px;background:var(--teal-pale);border:1px solid var(--teal-light);border-radius:var(--r);font-size:13px;color:var(--teal);text-align:center}
+.prov-check{display:flex;align-items:flex-start;gap:9px;cursor:pointer;padding:8px 10px;border:1px solid var(--cream-dark);border-radius:var(--r);transition:all .15s;background:var(--cream)}
+.prov-check:hover{border-color:var(--gold);background:var(--gold-pale)}
+.prov-check input[type=checkbox]{margin-top:2px;accent-color:var(--gold);flex-shrink:0;width:15px;height:15px}
+.prov-check-label{display:flex;flex-direction:column;gap:2px;font-size:13px;color:var(--ink-mid);line-height:1.4;user-select:none}
+.prov-check-num{display:inline-block;font-family:var(--mono);font-size:9px;font-weight:500;letter-spacing:.06em;padding:2px 6px;border-radius:3px;margin-bottom:2px;width:fit-content}
+.prov-check-authors{font-size:11px;color:var(--ink-light);font-family:var(--mono);letter-spacing:.04em}
+.verify-badge{display:inline-flex;align-items:center;gap:5px;background:var(--teal-pale);border:1px solid var(--teal-light);color:var(--teal);font-size:11px;font-family:var(--mono);padding:3px 8px;border-radius:12px;margin-top:6px}
+
+/* VIZ */
+.vstack{display:flex;flex-direction:column;gap:1.5rem}
+.vc{background:#fff;border:1px solid var(--cream-dark);border-radius:var(--rlg);padding:1.75rem;box-shadow:var(--shadow)}
+.vch h4{font-family:var(--serif);font-size:1.05rem;margin-bottom:3px}
+.vch .vsub{font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-light);margin-bottom:1.25rem}
+.srow{display:grid;grid-template-columns:repeat(3,1fr);gap:.875rem}
+.sbox{text-align:center;padding:.875rem;background:var(--cream);border-radius:var(--r);border:1px solid var(--cream-dark)}
+.snum{font-family:var(--serif);font-size:2rem;font-weight:700;color:var(--gold);line-height:1;margin-bottom:4px}
+.slbl{font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-light)}
+.tlist{display:flex;flex-direction:column;gap:9px}
+.trow{display:flex;align-items:center;gap:10px}
+.tname{font-size:12px;color:var(--ink-mid);min-width:130px;flex-shrink:0;font-weight:500}
+.tbg{flex:1;height:6px;background:var(--cream-dark);border-radius:3px;overflow:hidden}
+.tfill{height:100%;background:linear-gradient(90deg,var(--gold),var(--gold-light));border-radius:3px;transition:width .9s cubic-bezier(.23,1,.32,1)}
+.tn{font-size:11px;color:var(--ink-light);font-family:var(--mono);min-width:20px;text-align:right}
+.ail{display:none;align-items:center;gap:8px;font-size:12px;color:var(--ink-light);font-family:var(--mono);padding:8px 0}
+.d{width:5px;height:5px;border-radius:50%;background:var(--gold);animation:dp 1.2s ease-in-out infinite}
+.d:nth-child(2){animation-delay:.2s}.d:nth-child(3){animation-delay:.4s}
+@keyframes dp{0%,80%,100%{transform:scale(.5);opacity:.4}40%{transform:scale(1);opacity:1}}
+.rwrap{position:relative;height:200px}
+.mwrap{min-height:180px}
+.ctags{display:flex;flex-wrap:wrap;gap:5px;margin-top:10px}
+.ctag{font-family:var(--mono);font-size:10px;letter-spacing:.05em;color:var(--gold);background:var(--gold-pale);padding:3px 8px;border-radius:12px}
+.rfeed{display:flex;flex-direction:column;gap:8px;max-height:280px;overflow-y:auto;padding-right:4px}
+.rfeed::-webkit-scrollbar{width:3px}.rfeed::-webkit-scrollbar-track{background:var(--cream-dark)}.rfeed::-webkit-scrollbar-thumb{background:var(--gold);border-radius:2px}
+.ri{background:var(--cream);border-radius:var(--r);padding:11px 13px;border-left:3px solid var(--gold-pale);transition:border-color .2s}
+.ri:hover{border-left-color:var(--gold)}
+.rt{font-size:13px;color:var(--ink-mid);line-height:1.5;margin-bottom:5px}
+.rm{display:flex;gap:10px;flex-wrap:wrap}
+.rm span{font-family:var(--mono);font-size:10px;color:var(--ink-light)}
+.rm .rb{color:var(--teal)}
+.empty{font-size:13px;color:var(--ink-light);text-align:center;padding:1.5rem 0;font-family:var(--mono)}
+
+/* EXPORT */
+#export{background:var(--ink);color:#fff;padding:5rem 2rem;text-align:center}
+#export .sk{color:var(--gold-light);justify-content:center}
+#export h2{font-family:var(--serif);font-size:2rem;font-weight:700;margin-bottom:1rem}
+#export p{color:rgba(255,255,255,.5);margin-bottom:2.5rem;font-size:15px}
+.ebg{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap}
+
+/* MODAL */
+.ovl{position:fixed;inset:0;background:rgba(0,0,0,.78);z-index:200;display:none;align-items:center;justify-content:center;padding:2rem;backdrop-filter:blur(8px)}
+.ovl.open{display:flex}
+.mdl{background:var(--ink);border:1px solid rgba(255,255,255,.12);border-radius:var(--rlg);max-width:760px;width:100%;overflow:hidden;box-shadow:0 32px 80px rgba(0,0,0,.6)}
+.mtop{padding:1.5rem 1.75rem;border-bottom:1px solid rgba(255,255,255,.08);display:flex;justify-content:space-between;align-items:flex-start}
+.mname{font-family:var(--serif);font-size:1.2rem;font-weight:700;color:#fff}
+.mrole{font-family:var(--mono);font-size:11px;color:rgba(255,255,255,.35);margin-top:3px;letter-spacing:.05em}
+.xbtn{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:50%;color:rgba(255,255,255,.55);width:32px;height:32px;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0}
+.xbtn:hover{background:rgba(255,255,255,.14);color:#fff}
+.mva{padding:1.75rem;background:rgba(0,0,0,.25)}
+.vframe{position:relative;width:100%;padding-bottom:56.25%;background:rgba(0,0,0,.4);border-radius:var(--r);overflow:hidden}
+.vframe iframe,.vframe video{position:absolute;top:0;left:0;width:100%;height:100%;border:none}
+.mqt{padding:1.25rem 1.75rem;border-top:1px solid rgba(255,255,255,.06);font-family:var(--serif);font-style:italic;color:rgba(255,255,255,.5);font-size:14px;line-height:1.7}
+.mqt strong{color:rgba(255,255,255,.75);font-weight:600;font-style:normal;display:block;margin-bottom:4px;font-size:12px;font-family:var(--mono);letter-spacing:.06em;text-transform:uppercase}
+
+footer{background:var(--ink);border-top:1px solid rgba(255,255,255,.06);text-align:center;padding:2rem;font-family:var(--mono);font-size:11px;color:rgba(255,255,255,.25);letter-spacing:.08em}
+
+@keyframes fi{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.fi{animation:fi .45s ease forwards}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+@media(max-width:640px){
+  nav .nav-links{display:none}
+  .hero h1{font-size:1.9rem}
+  section{padding:4rem 1.25rem}
+  .fcard{padding:1.5rem;position:static}
+  .srow{grid-template-columns:1fr 1fr}
+  .paper-layout,.cgrid{grid-template-columns:1fr}
+  .paper-side{position:static}
+}
+
+.paper-reader{background:#fff;border:1px solid var(--cream-dark);border-radius:var(--rlg);overflow:hidden;box-shadow:var(--shadow);display:flex;flex-direction:column}
+.reader-toolbar{padding:11px 16px;border-bottom:1px solid var(--cream-dark);display:flex;align-items:center;justify-content:space-between;background:var(--ink);flex-shrink:0}
+.reader-dots{display:flex;gap:5px}
+.reader-dots span{width:10px;height:10px;border-radius:50%}
+.reader-dots span:nth-child(1){background:#e85d4a}.reader-dots span:nth-child(2){background:#e8c547}.reader-dots span:nth-child(3){background:#38b2a0}
+.reader-title{font-family:var(--mono);font-size:11px;color:rgba(255,255,255,.4)}
+.reader-dl{font-family:var(--mono);font-size:11px;color:var(--gold-light);text-decoration:none}
+.reader-dl:hover{text-decoration:underline}
+.reader-body{padding:3rem 3.5rem;overflow-y:auto;max-height:820px;font-family:var(--sans)}
+.reader-body::-webkit-scrollbar{width:5px}
+.reader-body::-webkit-scrollbar-track{background:var(--cream-mid)}
+.reader-body::-webkit-scrollbar-thumb{background:var(--gold);border-radius:3px}
+.doc-title{font-family:var(--serif);font-size:1.5rem;font-weight:700;line-height:1.2;color:var(--ink);text-align:center;margin-bottom:1.5rem;padding-bottom:1.5rem;border-bottom:2px solid var(--cream-dark)}
+.doc-h1{font-family:var(--serif);font-size:1.1rem;font-weight:700;color:var(--ink);margin:2rem 0 .75rem;padding-top:1rem}
+.doc-h2{font-family:var(--serif);font-size:.95rem;font-weight:600;color:var(--ink-mid);margin:1.5rem 0 .5rem;font-style:italic}
+.doc-p{font-size:14px;color:var(--ink-mid);line-height:1.85;margin-bottom:.85rem;text-align:justify}
+.doc-p strong{color:var(--ink);font-weight:600}
+.doc-p em{font-style:italic}
+.reader-body .doc-h1:first-of-type{margin-top:0}
+
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo">Revisiting Wise &amp; Schwarz's Provocations for CSCL</div>
+  <ul class="nav-links">
+    <li><a href="#paper">Paper</a></li>
+    <li><a href="#provocations">Provocations</a></li>
+    <li><a href="#videos">Scholars</a></li>
+    <li><a href="#challenge">Contribute</a></li>
+  </ul>
+  
+</nav>
+
+<!-- HERO -->
+<section class="hero" id="home">
+  <div class="hero-grid"></div>
+  <div class="hero-inner">
+    <div class="eyebrow">ISLS 2026 · Symposium · CSCL & Learning Sciences</div>
+    <h1 class="hero-title">Revisiting Wise &amp; Schwarz's<br><em>Provocations for CSCL</em></h1>
+    <p class="hero-subtitle">Partnerships for Transformation and Educational Change</p>
+    <p class="hero-abstract">In 2017, Wise and Schwarz proposed eight provocations for the field of CSCL. We broaden the call to the entire LS community to once again pause, reflect, and discuss a vision for the next 10 years of opportunities, challenges, and impacts we seek to make.</p>
+    <div class="hero-authors">
+      <span class="co-chair">Breneil Malcolm (Co-Chair)</span>
+      <span class="co-chair">Marcela Borge (Co-Chair &amp; Discussant)</span>
+      <span class="co-chair">Alyssa Wise (Discussant)</span>
+      <span class="co-chair">Marcelo Worsley (Discussant)</span>
+      <span>Sebastian Simon</span>
+      <span>Tanner Vea</span>
+      <span>Natalie Rae</span>
+      <span>Martin Greisel</span>
+      <span>Mia Čarapina</span>
+      <span>Ban Mouid Shiwalia</span>
+    </div>
+    <div class="btn-row">
+      <a href="#paper" class="btn btn-gold">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        Read the Paper
+      </a>
+      <a href="#challenge" class="btn btn-outline">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        Share Your Challenge
+      </a>
+      <a href="#videos" class="btn btn-outline">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+        Author Perspectives
+      </a>
+    </div>
+    <div class="scroll-cue"><div class="scroll-line"></div><span>scroll to explore</span></div>
+  </div>
+</section>
+
+<!-- PAPER -->
+<section id="paper">
+  <div class="inner">
+    <div class="sk">The Paper</div>
+    <h2 class="sh">Read the Full Symposium Paper</h2>
+    <div class="rule"></div>
+    <p class="sdesc">Embedded below as a scrollable read-only view. The final version will be published in June 2026. Use the button to download the PDF directly.</p>
+    <div class="paper-layout">
+      <div class="paper-side">
+        <div class="pmeta-card">
+          <div class="mrow">
+            <span class="mk">Title</span>
+            <span class="mv">Revisiting Wise &amp; Schwarz's Provocations for CSCL: Partnerships for Transformation and Educational Change</span>
+          </div>
+          <div class="mrow">
+            <span class="mk">Conference</span>
+            <span class="mv">ISLS 2026</span>
+          </div>
+          <div class="mrow">
+            <span class="mk">Session</span>
+            <span class="mv">Symposium</span>
+          </div>
+          <div class="mrow">
+            <span class="mk">Publication</span>
+            <span class="mv">Final version forthcoming June 2026</span>
+          </div>
+          <div class="mrow">
+            <span class="mk">Co-Chairs</span>
+            <div class="achip">Breneil Malcolm <span class="role-note">Penn State University</span></div>
+            <div class="achip">Marcela Borge <span class="role-note">Penn State University</span></div>
+          </div>
+          <div class="mrow">
+            <span class="mk">Discussants</span>
+            <div class="achip">Alyssa Wise <span class="role-note">Vanderbilt University</span></div>
+            <div class="achip">Marcelo Worsley <span class="role-note">Northwestern University</span></div>
+          </div>
+          <div class="mrow">
+            <span class="mk">Authors</span>
+            <div class="achip">Sebastian Simon <span class="role-note">U. of Copenhagen</span></div>
+            <div class="achip">Tanner Vea <span class="role-note">U. of Washington</span></div>
+            <div class="achip">Natalie Rae <span class="role-note">Penn State University</span></div>
+            <div class="achip">Martin Greisel <span class="role-note">U. of Augsburg</span></div>
+            <div class="achip">Mia Čarapina <span class="role-note">Zagreb U. of Applied Sciences</span></div>
+            <div class="achip">Ban Mouid Shiwalia <span class="role-note">U. of Copenhagen</span></div>
+          </div>
+        </div>
+        <a href="CSCL-Symposium_RevisitingProvocations.pdf" target="_blank" class="btn btn-gold" style="width:100%;justify-content:center;font-size:13px;margin-bottom:.75rem">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Download PDF
+        </a>
+
+      </div>
+      <div class="paper-reader">
+        <div class="reader-toolbar">
+          <div class="reader-dots"><span></span><span></span><span></span></div>
+          <div class="reader-title">CSCL-Symposium_RevisitingProvocations.docx</div>
+          <a href="CSCL-Symposium_RevisitingProvocations.pdf" download class="reader-dl">↓ PDF</a>
+        </div>
+        <div class="reader-body">
+<h1 class="doc-title">Revisiting Wise & Schwarz’s Provocations for CSCL: Partnerships for Transformation and Educational Change</h1>
+<p class="doc-p">Breneil Malcolm (Co-Chair), Penn State University, <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="a8cad0c59d9f9d98e8d8dbdd86cdccdd">[email&#160;protected]</a> </p>
+<p class="doc-p">Marcela Borge (Co-Chair & Discussant), Penn State University, <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="1c717e6f2d295c6c6f6932797869">[email&#160;protected]</a> </p>
+<p class="doc-p">Alyssa Wise (Discussant), Vanderbilt University, <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="5f3e33262c2c3e7128362c3a1f293e313b3a2d3d36332b713a3b2a">[email&#160;protected]</a> </p>
+<p class="doc-p">Marcelo Worsley (Discussant), Northwestern University, </p>
+<p class="doc-p">Sebastian Simon (Hybrid Ambassador), University of Copenhagen, </p>
+<p class="doc-p">Tanner Vea, University of Washington, </p>
+<p class="doc-p">Natalie Rae, Penn State University, </p>
+<p class="doc-p">Martin Greisel, University of Augsburg, </p>
+<p class="doc-p">Mia Čarapina, Zagreb University of Applied Sciences,  </p>
+<p class="doc-p">Ban Mouid Shiwalia, University of Copenhagen,  </p>
+<p class="doc-p"><strong>Abstract:</strong> In 2017, Wise and Schwarz proposed eight provocations for the field of CSCL following their interactions and analyses with scholars within the field. We broaden the call to the entire LS community to once again pause, reflect, and discuss a vision for the next 10 years of opportunities, challenges, and impacts we seek to make. This collective ambition is not simply to be responsive to technological changes but also to inform their design and use. Towards this end, we invited researchers from the ICLS and CSCL communities to propose new provocations for us to consider and discuss that focus both on the changing technological landscape and the need to ensure that diverse perspectives and viewpoints are brought into the forefront of technology-enhanced collaboration in meaningful ways.</p>
+<h2 class="doc-h1">Introduction</h2>
+<p class="doc-p">As our world grows ever more reliant on digital technologies to communicate, share knowledge, and think together, and as AI rapidly reshapes how we work and learn, the ICLS and CSCL communities are poised to make critical contributions in ensuring these tools strengthen, rather than undermine, the collective good. In their paper “Visions of CSCL: Eight provocations for the future of the field,” Wise and Schwarz (2017) originally challenged the CSCL community to reflect on its beginnings and identify what they believed to be the greatest challenges the field would face in the coming years. As we approach the 10th anniversary of the provocations article and face a changing educational landscape, we broaden the call to the entire LS community to once again pause, reflect, and discuss a vision for the next 10 years of opportunities, challenges, and impacts we seek to make. The collective ambition is to not simply be responsive to technological change, but also capable of informing and shaping these developments through [our] rich theoretical landscape.” (Kaliisa et al., 2025, p. 16).</p>
+<h2 class="doc-h1">The need to focus on technology-enhanced collaboration</h2>
+<p class="doc-p">Globally, we are seeing how social media technologies are amplifying polarization, politics of hate, and a splintering of society. There is also concern over the rise of generative AI tools and findings that generative AI use is higher among children in higher socio-economic classes and with children who attend private schools than public schools (Hashem et al., 2025). Learners often use technologies like ChatGPT to learn about new things, which is both exciting but also potentially problematic. Recent research points to the dangers of weaker engagement in and self-regulation of learning activities (Fan et al., 2024) and reduced cognitive activity, recall, and ownership of tasks (Kosmyna et al., 2025) when using generative AI in unscaffolded ways.  </p>
+<p class="doc-p"> 	Learners are also finding ways to use generative AI to spark creativity, opening possibilities for CSCL to help shape the design of playful, creative, and culturally relevant learning experiences that foster higher-order thinking and collaborative habits of mind (Kafai & Morales-Navarro, 2023). This, however, does not address the ongoing risk that generative AI may reinforce existing inequities and deepen the digital divide if left to be adopted in the wild. </p>
+<h2 class="doc-h1">The need to build bridges across ICLS and CSCL</h2>
+<p class="doc-p">The dearth of research in CSCL that focuses on systemic inequity or the needs of diverse populations is problematic if we are to help inform the design and use of technology-enhanced collaboration for globally diverse populations (Gomez et al., 2021). Without full awareness of the ways that technology design and use can negatively impact differing populations, we run the risk of amplifying existing patterns of interaction that may harm many of our learners. More researchers within the broader Learning Sciences community focus on different forms of equity, culturally meaningful STEM, and learner-centered research (Fong et al., 2023; Rajala et al., 2022; Sheridan et al., 2022). However, much of this research is US-centric and less focused on technological implications (Sawyer, 2022). CSCL researchers tend to be more focused on the technological implications of research and more globally distributed (Baker & Reimann, 2025; Kurtz et al., 2025). Thus, by bridging these communities, we can identify new grand challenges and discuss whether and how educational transformation should be a goal of the International Society of the Learning Sciences. </p>
+<p class="doc-p">Towards this end, we invited researchers from the ICLS and CSCL communities to propose new provocations for us to consider and discuss that focus both on the changing technological landscape and the need to ensure that diverse perspectives and viewpoints are brought into the forefront of technology-enhanced collaboration in meaningful ways.  </p>
+<h2 class="doc-h1">Provocation 1: As a cultural practice that sustains the conditions for democracy, collaborative learning embodies a societal responsibility that must be prioritized</h2>
+<p class="doc-p">Sebastian Simon, Mia Čarapina, and Ban Mouid Shiwalia</p>
+<p class="doc-p">Divisive tendencies are on the rise worldwide. Global collaborations and democratic institutions are under strain, and technological infrastructures increasingly amplify fragmentation . History shows that democracies have weakened before, yet recovery has almost always come from below, through collective civic movements that depend on citizens’ ability to deliberate, coordinate, and act together . While such collaborations always have been challenging, today such capacities are additionally challenged by technological progress: mass surveillance and social credit systems foster self-censorship and suppress social movements in their roots , algorithmic personalization in social media , and the rise of AI systems marketed as companions promise frictionless interaction while quietly eroding the messy but vital experience of human collaboration. Symptoms such as the loneliness epidemic , erosion of core collaborative values such as respect and trust in education, and within other social settings foreshadow the larger impacts on democracies that these developments have .</p>
+<p class="doc-p">If democratic resilience depends on the collective capacity of societies to rebuild social trust, negotiate shared meaning, and listen to each other through empathy and dialogue, then building these capacities in future citizens becomes an educational imperative. We argue that collaborative learning is not merely a pedagogical method, but a cultural practice that sustains the very conditions for democracy in an age of technological individualisation. Everyone learns through and to navigate within complex social systems, and computer support has become ubiquitous in that regard. As such, CSCL and related fields share a responsibility towards current and future citizens to help them collaborate—and understand collaboration—better.</p>
+<p class="doc-p">The question of how this is to happen when CSCL generally focuses on small-scale, isolated interventions with artificial activities designed by researchers (. However, even a systematic, shared theory-driven understanding of collaborative learning requires, at the outset, small controlled studies in which variables can be isolated and collaborative learning processes examined rigorously. In this process, findings must be iteratively discussed with practitioners to situate theoretical mechanisms within the realities of classroom practice, rather than relying on idealized models. Through such investigations, researchers can identify the mechanisms that genuinely support learning in CSCL and differentiate between activities that facilitate collaboration to then support practitioners. Previously labeled ineffective interventions should, in this regard, not be seen as failures but as analytical insights that inform the development of supportive techniques, e.g., scripting . It is crucial to understand that these techniques are not to dictate students' thinking processes, but to structure interactions so that meaningful collaboration can emerge, while simultaneously promoting co-knowledge acquisition and collaborative competencies. Once we agree on foundational principles (which we clearly still lack), research can start being translated into practice through meaningful partnerships with K-12 schools, universities, community-based organizations, and corporate partners. In this way, the small-scale studies provide the basis for sustainable and scalable CSCL interventions that are both theoretically grounded and practically relevant. Feedback from practitioners can then inform further research on these collaborative practices, bound to change in the contexts they are practiced in. The artificiality of experimental, collaborative activities is another interesting point, since CSCL can have another, direct impact through the design of its activities. These activities implement CSCL theory and practice, such as positive interdependence or knowledge of the intricate social processes, and as such present an interesting opportunity for practitioners to explore such settings as a learning opportunity for themselves. One could argue that this mutual exchange is, in itself, collaborative learning. But not only do we need a collaborative learning opportunity between practitioners and researchers. If isolated studies are an issue, why don’t we apply what we know about collaborative learning to innovate how we learn as a community and conduct large multilab experiments? There is an argument against more collaboration from cognitive collaborative load theory, that collaboration in learning situations has to be sufficiently complex to invest the time for collaborative coordination (Kirschner, 2018). We argue that if we truly embody our principles in our research, multi-lab interdisciplinary collaborations should be the norm, interventions both close to practice and transmitting collaborative skills should be the norm, and sharing collaborative knowledge and values with participants should be the norm. Interestingly, going down this difficult road of collaborative research will open a potential just as interesting: the possibility to study collaboration between CSCL researchers who have awareness on what successful collaboration requires and means. By building community, CSCL can serve as an example for other communities and rebuild the spirit of collaborative learning on the many levels it is challenged across the world today. Learning is no isolated endeavour that happens in schools. It happens through interactions everywhere and all the time, and it is intrinsically collaborative. If we want society to prevail, CSCL must itself set the example and collaborate across every spectrum of it.</p>
+<h2 class="doc-h1">Provocation 2: We need to develop solidarity with communities to redefine what we mean by educational change</h2>
+<p class="doc-p">Natalie Rae</p>
+<p class="doc-p">It is necessary to redefine what educational change might mean in the context of the intensifying socioecological crisis and the rise of generative AI (GAI) tools. Thinking alongside elaborations of educational change, such as Law and colleagues' (2021) dimensions of scalability, I advance a notion of educational change that takes up Philip and Sengupta's (2020) urgent call to see theories of learning within historical and contemporary processes of imperialism. This reorientation underscores the importance of a shift from tool-centric collaboration learning to collective, justice-oriented approaches that foreground collaboration as solidarity with social movements for justice and self-determination. In light of the ecological assessments of GAI's impacts and ISLS 2026 conference theme, <em>'Partnering with Purpose,'</em> I engage with literature in and beyond LS and CSLC to call for the sociopolitical process of developing solidarity with communities – as co-thinkers and partners in the struggle for collective socioecological thriving.</p>
+<h3 class="doc-h2">GAI's positioning as an emerging technology for learning</h3>
+<p class="doc-p">Since Wise and Schwarz's (2017) publication, there has been a tremendous increase in research on GAI in education (Ng & Ho, 2025). The hype and hyperbole around GAI's capabilities and utility for learning have been met with both enthusiasm for possible futures and caution – with scholarship examining evidence of ongoing social (e.g., Selwyn, 2022) and ecological (Markelius et al., 2024) harm. Increased financial speculation and investment in the development of physical infrastructure to enable GAI — expanding demands on fossil fuel energy use through data center development (Edwards et al., 2025) — traces the colonialism’s patterns of expropriation and exploitation (Birhane, 2020). As communities within the U.S. (see Memphis, Tennessee, in Kolodny, 2025) and the majority world  (see Chilean water activists and Uruguayan citizens in Hao, 2025) contest the development of data centers in their locales, social movements for self-determination are of immediate concern for the communities by which technology and capital interests have impinged (Faniyi, 2024). Self-determination here refers not only to a group's claims to autonomy and having consequential governance, but also to a collective, relational praxis rooted in the cosmologies of indigenous and Afro-descended peoples (e.g., Walsh, 2015). In the next section, I unpack an example of one of such movements, in Boxtown South Memphis, a case that makes clear the stakes of committing to and reimagining educational change for learning designers and scientists who consider learning within emerging technologies. Where scholars in the learning sciences and CSCL communities have articulated how theories and designs for learning are accountable to their contemporaneous political contexts (e.g., Philip & Sengupta, 2020, Learning Towards Justice, 2025), notions of educational change must reflect this context. </p>
+<h3 class="doc-h2">A case study in self-determination in the age of AI-data centers: Boxtown, South Memphis</h3>
+<p class="doc-p">This essay began by wanting to think about how the conversation about AI use makes any conceptual contact with community efforts for self-determination, rooted in the intellectual genealogies of politicized thought and action, and grew out of my inquiry into a historically Black town in South Memphis, Tennessee, Boxtown. In 2024, the former Electrolux factory in Memphis was transformed into a data center for Elon Musk's company xAI's product, Grok. Since the factory was taken over, community members have expressed concerns about the use of natural gas generators – more than were permitted – as exacerbating air-quality problems (Harris et al., 2025).</p>
+<p class="doc-p">The Boxtown community in South Memphis represents a robust case of resistance and ecological justice in the face of industrial encroachment and environmental racism. The Boxtown community was formed by formerly enslaved Black people who built homes from abandoned boxcars, creating an independent community (Moore, 2021). Enduring decades of industrial pollution, including exposure to refinery emissions, coal ash, and steam plant operations, conditions are in the backdrop of studies that indicate significantly elevated cancer rates and other health disparities among residents. The Boxtown community, people, and ecology have been treated as expendable —an ostensible sacrifice zone (Juskus, 2023) — in the face of industrialism and expanding profit. Boxtown residents have been collectively pushing back against injustice, most recently their successful opposition to the Byhalia Connection Pipeline (First-Arai, 2022). My historical coverage is meant to underscore how these industrial intrusions are not incidental but part of the economic, political, and ideological work that renders lives as expendable to the will of industrial progress.  And yet, these communities resisted, such as the Memphis 1968 Sanitation Strike, considered a precursor to the contemporary environmental justice movement (League of Conservation Voters, 2022). The tools, strategies, and intellectual legacy of activism for self-determination is a collective, relational praxis rooted in the cosmologies of indigenous and Afro-descended peoples (e.g., Walsh, 2015). In each of these movements, the strategies of organizing people, the reasoning for strategies, the ways of partnering and coming together are forms of learning and action as much as the products of their efforts - an articulation for reparative justice—calling for ecological redevelopment, solar energy investment, and the restoration of Black and Indigenous relationships to land and place for themselves and communities like them. Secondly, it would be disingenuous to frame Boxtown’s activism and calls for self-determination only as relevant within the contemporaneous concerns specific to xAI’s Colossus 1 Data center operations, but rather part of a longstanding struggle of racially impacted industrialization. </p>
+<p class="doc-p">How can we think about domain learning or collaboration when the learners themselves cannot breathe? My question is not a compositional flourish: I ask this with impatient sincerity, as I am but one of the growing number of Black parents who have children with respiratory conditions that can keep them out of school and threaten their wellness. What is the point of Computer Supported Collaborative Learning when the computational infrastructure is at the expense of Black peoples’ lives and our ecologies’ ability to thrive? For my thinking, Táíwò's (2022) concept of constructive politics: the creation of new social structures and relationships that redistribute power and resources. For Boxtown's demands go beyond inclusion in existing governance with regard to one technology—they seek radical transformation. For CSCL, this case underscores the need to recognize community organizing as a form of learning, in which scientific inquiry, environmental monitoring, and advocacy are intensely collaborative and pedagogical. Incorporating such cases into CSCL discourse challenges the field to expand its unit of analysis from individual learners to communities and ecologies. It also calls for a redefinition of educational change—one that centers solidarity, reparations, and ecological justice as urgent and transformative learning outcomes.</p>
+<h3 class="doc-h2">Design implications for CSCL: Constructive politics and solidarity-centered learning</h3>
+<p class="doc-p">Drawing on Law et al.'s (2021) five dimensions of scalability—depth, sustainability, spread, ownership, and evolution—I call on CSCL to reimagine its design principles to support justice-oriented learning, specifically in the context of social movements for self-determination in the global proliferation contexts of data centers. This involves moving beyond tool-centric models to embrace community-centered learning architectures, thereby emphasizing the crucial role of community involvement in educational design.</p>
+<p class="doc-p">Constructive politics offers a framework for these transformations. It invites CSCL researchers and designers to build 'the rooms'—physical and conceptual spaces—where communities can imagine and enact just futures. This includes developing infrastructures that support learning as resistance, such as platforms for environmental monitoring, storytelling, and policy advocacy. Moreover, CSCL must adopt design principles that center on solidarity. This means engaging with peripheral contexts (Matuk et al., 2021), where affected communities are treated as co-designers for collective action in which we are personally accountable to. Ultimately, CSCL's role in educational change lies not in scaling tools, but in scaling justice. By aligning with social movements and ecological struggles, the field can contribute to learning environments that are not only collaborative but also liberatory.</p>
+<h2 class="doc-h1">Provocation 3: We need to bridge epistemological differences between LS and CSCL to cultivate more productive collaborations</h2>
+<p class="doc-p">Martin Greisel</p>
+<p class="doc-p">Any call to collaborate between the Learning Sciences (LS) and Computer-Supported Collaborative Learning (CSCL) will be ineffective if it remains unclear how to bridge epistemological differences. This claim rests on three assumptions: (a) Researchers differ in their epistemic aims, ideals or standards, and the processes they consider as producing reliable knowledge (see AIR framework; Barzilai & Chinn, 2024); (b) If researchers do not understand each other’s epistemic commitments, genuine collaboration is unlikely to emerge; and (c) while LS is often associated with interpretative, design-based, or social justice-oriented traditions, CSCL includes a broader mix of approaches with a noticeable tendency toward analytical or computational methods.</p>
+<p class="doc-p">From this perspective, collaboration is less a matter of aligning two research communities and more a matter of navigating epistemological commitments. Two researchers from different communities may immediately understand each other if they share a similar epistemic stance. Conversely, two scholars within the same community might struggle to communicate if one draws on interpretative reasoning grounded in situated meaning-making, while the other adopts a predominantly analytical stance focused on variable-based explanations and generalization. The key argument here is that the primary challenge is not bridging LS and CSCL as communities but fostering dialogue across interpretative, analytical, design-based, and social justice-oriented epistemologies that cut across both communities.</p>
+<p class="doc-p">Understanding across epistemological differences requires more than goodwill; it requires tools that support meta-level reflection on how we produce knowledge. A first step could be the deliberate creation and adoption of a <em>shared vocabulary</em>. Importantly, a shared vocabulary does not imply consensus on definitions. Researchers do not need to agree on a single definition of “learning,” “collaboration,” or “theory.” Rather, they need mutually intelligible language that allows them to express where and why their definitions diverge. Without this linguistic infrastructure, researchers may talk past each other, mistaking epistemic differences for disagreements in substance, or just end up ignoring each other because they do not know how to relate others’ insights to their own style of doing research.</p>
+<p class="doc-p">As a first step, to provide such a linguistic infrastructure and to make these epistemic positions visible rather than implicit, it would be beneficial for the community to develop a <em>taxonomy</em> of epistemological approaches. By taxonomy, I mean a structured classification system that makes explicit the epistemic aims (e.g., understand meaning-making, build descriptive or predictive models, develop design principles, transform power relations), the standards of evidence (e.g., thick description & theoretical resonance, statistical robustness & generalizability, practical consequentiality & iterative justification, justice in the research process & liberatory assessment), and the knowledge-generating processes (e.g., grounded interpretation & co-interpretation with participants, experimental manipulation & reliable measurement, iterative design & pragmatic evaluation, reflexive documentation & community feedback) that researchers align with (Barzilai & Chinn, 2024). With this suggestion, I extend Rummel’s (2018) suggestion to use a taxonomy to categorize different ways to support collaboration with technology. Such an (extended) taxonomy would not prescribe what “counts” as credible research. Instead, it would act as a reflective scaffold, enabling researchers to situate their work transparently and to recognize others’ positions without reducing them to community labels like “LS” or “CSCL.”</p>
+<p class="doc-p">One could imagine a lightweight tagging system, used alongside publications or conference proceedings contributions, where authors indicate their epistemic profile, their methods, and the phenomenon they study using shared categories from the taxonomy. For example, contributions could self-identify as interpretative with the aim of a deep understanding of meaning-making mechanisms in a specific context, or analytical with the aim of generalizable knowledge, design-based with the aim of developing artefacts that are useful in educational practice, or social justice-oriented with the aim of transforming existing power relations. Making these epistemological commitments and approaches explicit could help readers interpret arguments more generously and accurately. Instead of assuming incompatibility, researchers could see how different approaches complement each other in addressing the same complex learning phenomena.</p>
+<p class="doc-p">By shifting the conversation from community boundaries to epistemological transparency, we might cultivate more productive collaborations. Rather than asking how LS and CSCL can work together, we might instead ask: How can interpretative, analytical, design-based, or social justice-oriented scholars build reciprocal understanding without forcing assimilation into a single dominant discourse? A community-wide taxonomy and shared vocabulary could be a pragmatic step toward that goal, encouraging intentional pluralism while reducing inadvertent fragmentation.</p>
+<h2 class="doc-h1">Provocation 4: None of this matters if we don’t stop authoritarianism</h2>
+<p class="doc-p">Tanner Vea</p>
+<p class="doc-p">There was a time when I used to go on the internet to catch up with friends, post pictures of my mundane life, and yes—learn collaboratively. Compared to a couple of years ago, when I stood in front of my colleagues in the learning sciences to warn them of fascism (Author, 2023), we in the United States have lost further ground. It is becoming increasingly common in the US to see videos of masked secret police making children stand naked in the cold street at night and whisking people away in unmarked vans (Hernandez, 2025). There are revelations about a group chat of young conservatives, the future of our ruling party, joking about gas chambers (Beeferman & Ngo, 2025). Rising authoritarianism is not unique to the United States (Gorokhovskaia & Grothe, 2025). The protection of tenure and the idea of academic freedom used to be pillars of the academy as well, but these too are weakening as the US government makes demands for how educational institutions are run, who is hired, and what is taught (Helsel, 2025). Fascism seeks to control education to limit dissent over the installation of extreme social hierarchy (Stanley, 2018). This reality is reinforced on the internet as we see post after post about professors put on leave or fired for speaking against hate and authoritarianism <em>in the wrong ways</em>. Every once in a while, I wonder about whether I have done so <em>in the right ways</em> and might therefore be safe. Then I remember that this, too, is part of the long slide into authoritarianism. The fear of unthinkable things, now made thinkable, shapes every other thought. </p>
+<p class="doc-p">Arcing through the rising tide of authoritarianism is the erosion of truth (Barzilai & Chinn, 2020). We cannot understand our current epistemic challenges without understanding power (Finchelstein, 2022). Traditional gatekeeping structures have weakened, and now “populist expertise” (Marwick & Partin, 2024) in digital social (and learning) spaces fills the void with conspiracy theories. Leaders, experts, and lay people mingle online in ways that once seemed to hold promise for a new democratization (Barlow, 1996) but now has become a vector of disinformation (Starbird et al., 2023). If social media is an important site of learning (provocation 7; Wise and Schwarz, 2017), is this not the most prominent use case of computer-supported collaborative learning in our current age?</p>
+<p class="doc-p">As these events play out and impact us on a global scale, we must ask if the learning sciences can inform these debates or use the scholarly enterprise to help shape alternative possibilities. There are positive cases where design and analysis illuminate, in my view, the kinds of knowledge we now need (e.g., Jurow et al., 2016; Russo & Blikstein, 2023). But I also think of the senior scholar who told me that activism is not science or another who disrupted a student’s presentation for calling out the implication of technology in mass murder. Those voices seem to say: How dare we have anything to say about the world we live in? There will be consequences for being a learning scientist who steps out of line. In the meanwhile, more laws are broken. More bodies pile up. More pain, and less humanity, on my screen. </p>
+<p class="doc-p">I do believe that the CSCL community and the broader learning sciences community must work together now for a field that is worthy of our moment. We cannot do so by policing each other into asking smaller and smaller questions about learning, as if retreating from the conditions of our lives will protect the sanctity of the scientific endeavor. I became a learning scientist to build on the work of others who illuminated that learning is always political (e.g., Esmonde & Booker, 2017; Gutiérrez & Rogoff, 2003; Nasir & Hand, 2006; Philip et al., 2017; The Politics of Learning Writing Collective, 2017). The “what” and “how” of learning cannot be meaningfully separated from questions about what is good and right and who has access to it (Philip et al., 2018). Power needs to be brought into our understanding of every community of practice (Curnow, 2022). If, as Cole (1994) offered, context is “that which weaves together” (p. 93), then the context of rising authoritarianism is weaving together everything we are doing in the learning sciences. It is literally shaping who is in the room, versus who is online, versus those who are absent altogether. It is shaping the questions we are allowing each other to ask and answer. It is the fear of the previously unthinkable that now enters my every thought. If we do not use this moment to stand up for one another, we may lose the ability to conduct rigorous learning research that seeks equitable learning possibilities for <em>every</em> child. A learning sciences that cannot—or will not (Learning Towards Justice Team, 2025)—help explain how we got here or how we get out is not a learning sciences I want to belong to.</p>
+<h2 class="doc-h1">Engaging the community</h2>
+<p class="doc-p">These provocations are offered not as conclusions but as openings for conversation, critique, and co-creation within and across the CSCL and LS communities. We invite you to respond, challenge, extend, and reimagine them in light of your own work and perspectives, and to propose new provocations that surface emerging questions, contexts, and commitments not represented here. Our aim is to foster new lines of inquiry and sustain a shared dialogue on how LS and CSCL research can shape the technologies and practices of collaboration in the decade ahead, with attention to both our shared foundations and the diverse values, theories, and commitments that shape our collective practice.</p>
+<h2 class="doc-h1">References</h2>
+<p class="doc-p">Baker, M., Reimann, P. (2025). Editorial notes: Core issues in CSCL research. <em>International Journal of Computer-Supported Collaborative Learning</em> 20, 165–170 </p>
+<p class="doc-p">Barlow, J. P. (1996). <em>A declaration of the independence of cyberspace</em>. Electronic Frontier Foundation. </p>
+<p class="doc-p">Barzilai, S., & Chinn, C. A. (2020). A review of educational responses to the “post-truth” condition: Four lenses on “post-truth” problems. <em>Educational Psychologist</em>, <em>55</em>(3), 107–119. </p>
+<p class="doc-p">Barzilai, S., & Chinn, C. A. (2024). The AIR and Apt-AIR frameworks of epistemic performance and growth: Reflections on educational theory development. <em>Educational Psychology Review</em>, <em>36</em>(3), 91.</p>
+<p class="doc-p">Beeferman, J., & Ngo, E. (2025, October 14). ‘I love Hitler’: Leaked messages expose Young Republicans’ racist chat. <em>Politico</em>. </p>
+<p class="doc-p">Birhane, A. (2020). Algorithmic colonization of Africa. <em>SCRIPT-Ed</em>, <em>17</em>(2), 389–409.</p>
+<p class="doc-p">Cole, M. (1994). A conception of culture for a communication theory of mind. In D. R. Vocate (Ed.), <em>Intrapersonal communication: Different voices, different minds</em> (pp. 77–98). Erlbaum.</p>
+<p class="doc-p">Curnow, J. (2022). Resituating situated learning within racialized and colonial social relations. <em>Mind, Culture, and Activity</em>, <em>29</em>(4), 301–315. </p>
+<p class="doc-p">Edwards, D., Cooper, Z. G. T., & Hogan, M. (2025). The making of critical data center studies. <em>Convergence: The International Journal of Research into New Media Technologies</em>, <em>31</em>(2), 429–446.</p>
+<p class="doc-p">Esmonde, I., & Booker, A. (Eds.). (2017). <em>Power and privilege in the learning sciences: Critical and sociocultural theories of learning</em>. Routledge.</p>
+<p class="doc-p">Fan, Y., Tang, L., Le, H., Shen, K., Tan, S., Zhao, Y., ... & Gašević, D. (2025). Beware of metacognitive laziness: Effects of generative artificial intelligence on learning motivation, processes, and performance. <em>British Journal of Educational Technology</em>, <em>56</em>(2), 489–530. </p>
+<p class="doc-p">Faniyi, O. (2024, February 27). An African feminist manifesto. <em>The Republic</em>.</p>
+<p class="doc-p">Finchelstein, F. (2022). <em>A brief history of fascist lies</em>. University of California Press.</p>
+<p class="doc-p">First-Arai, L. (2022). <em>Lesson 7: Do it again</em> (No. 7) [Broadcast].</p>
+<p class="doc-p">Fong, M. M., DeLiema, D., Flood, V. J., & Walker-van Aalst, O. (2023). Contesting sociocomputational norms: Computer programming instructors and students’ stancetaking around refactoring.<em> International Journal of Computer-Supported Collaborative Learning, 20</em>, 79–119. </p>
+<p class="doc-p">Gomez, K., Gomez, L. M., & Worsley, M. (2021). Interrogating the role of CSCL in diversity, equity, and inclusion. In U. Cress, C. Rosé, A. F. Wise, & J. Oshiam (Eds.), <em>International handbook of computer-supported collaborative learning</em> (pp. 103–119). Cham: Springer International Publishing.</p>
+<p class="doc-p">Gorokhovskaia, Y., & Grothe, C. (2025). <em>Freedom in the world 2025: The uphill battle to safeguard rights</em>. Freedom House. </p>
+<p class="doc-p">Gutiérrez, K. D., & Rogoff, B. (2003). Cultural ways of learning: Individual traits or repertoires of practice. <em>Educational Researcher</em>, <em>32</em>(5), 19–25. </p>
+<p class="doc-p">Hao, K. (2025). <em>Empire of AI: Dreams and nightmares in Sam Altman’s OpenAI</em>. Penguin Press.</p>
+<p class="doc-p">Harris, B., Gerberg, J., & Gosk, S. (2025). Up against Musk’s Colossus supercomputer, a Memphis neighborhood fights for clean air. <em>NBC News</em>.</p>
+<p class="doc-p">Hashem, Y., Esnaashari, S., Onslow, K., Chakraborty, S., Poletaev, A., Francis, J., Bright, J. (2025). <em>Understanding the impacts of generative AI use on children: WP1 surveys</em>. The Alan Turing Institute. </p>
+<p class="doc-p">Helsel, P. (2025, October 16). How universities are responding to the Trump administration’s ‘compact’ for funding. <em>NBC News. </em></p>
+<p class="doc-p">Hernandez, C. (2025, October 1). Massive immigration raid on Chicago apartment building leaves residents reeling: “I feel defeated.” <em>Chicago Sun-Times</em>. https://chicago.suntimes.com/immigration/2025/10/01/massive-immigration-raid-on-chicago-apartment-building-leaves-residents-reeling-i-feel-defeated</p>
+<p class="doc-p">Jurow, A. S., Teeters, L., Shea, M., & Van Steenis, E. (2016). Extending the consequentiality of “invisible work” in the food justice movement. <em>Cognition and Instruction</em>, <em>34</em>(3), 210–221. </p>
+<p class="doc-p">Juskus, R. (2023). Sacrifice Zones. <em>Environmental Humanities</em>, <em>15</em>(1), 3–24.</p>
+<p class="doc-p">Kafai, Y. B. & Morales-Navarro, L. (2023). Twenty Constructionist Things to Do with Artificial Intelligence and Machine Learning. In Proceedings of Fablearn/Constructionism 2023. </p>
+<p class="doc-p">Kaliisa, R., Lopez-Pernas, S., Misiejuk, K., Damşa, C., Sobocinski, M., Järvelä, S., & Saqr, M. (2025). A topical review of research in computer-supported collaborative learning: Questions and possibilities. <em>Computers & Education</em>, <em>228</em>, 105246. </p>
+<p class="doc-p">Kolodny, L. (2025, July 17). <em>Elon Musk’s xAI permits challenged by NAACP, environmental groups in Memphis</em>. CNBC.</p>
+<p class="doc-p">Kosmyna, N., Hauptmann, E., Yuan, Y. T., Situ, J., Liao, X. H., Beresnitzky, A. V., ... & Maes, P. (2025). Your brain on ChatGPT: Accumulation of cognitive debt when using an AI assistant for essay writing task. <em>arXiv preprint arXiv:2506.08872</em>, <em>4</em>.</p>
+<p class="doc-p">Kurtz, M., Benabbou, A., Pons, C., & Broisin, J. (2025). Collaboration in virtual and remote laboratories for education: A systematic literature review. <em>International Journal of Computer-Supported Collaborative Learning</em>, 1-55. </p>
+<p class="doc-p">Law, N., Zhang, J., & Peppler, K. (2021). Sustainability and scalability of CSCL innovations. In U. Cress, C. Rosé, A. F. Wise, & J. Oshima (Eds.), <em>International Handbook of Computer-Supported Collaborative Learning</em> (pp. 121–141). Springer International Publishing.</p>
+<p class="doc-p">League of Conservation Voters. (2022, February 14). Environmental Justice: A Movement Led and Progressed by Black Trailblazers - Part 1. <em>League of Conservation Voters</em>.</p>
+<p class="doc-p">Learning Towards Justice Team. (2025). Avoiding equity detours on the way to a more justice-oriented learning sciences. <em>Journal of the Learning Sciences</em>, <em>34</em>(3), 368–402. </p>
+<p class="doc-p">Marwick, A. E., & Partin, W. C. (2024). Constructing alternative facts: Populist expertise and the QAnon conspiracy. <em>New Media & Society</em>, <em>26</em>(5), 2535–2555. </p>
+<p class="doc-p">Matuk, C., DesPortes, K., & Hoadley, C. (2021). Conceptualizing context in CSCL: Cognitive and sociocultural perspectives. In U. Cress, C. Rosé, A. F. Wise, & J. Oshima (Eds.), <em>International Handbook of Computer-Supported Collaborative Learning</em> (pp. 85–101). Springer International Publishing.</p>
+<p class="doc-p">Moore, R. E. (2021). <em>Boxtown: A forgotten piece of Memphis history</em>. Memphis Mirror.</p>
+<p class="doc-p">Nasir, N. S., & Hand, V. M. (2006). Exploring sociocultural perspectives on race, culture, and learning. <em>Review of Educational Research</em>, <em>76</em>(4), 449–475. </p>
+<p class="doc-p">Ng, S.-L., & Ho, C.-C. (2025). Generative AI in education: Mapping the research landscape through bibliometric analysis. <em>Information, 16</em>(8), 657.</p>
+<p class="doc-p">Philip, T. M., Bang, M., & Jackson, K. (2018). Articulating the “how,” the “for what,” the “for whom,” and the “with whom” in concert: A call to broaden the benchmarks of our scholarship. <em>Cognition and Instruction</em>, <em>36</em>(2), 83–88. https://doi.org/10.1080/07370008.2018.1413530</p>
+<p class="doc-p">Philip, T. M., Gupta, A., Elby, A., & Turpen, C. (2017). Why ideology matters for learning: A case of ideological convergence in an engineering ethics classroom discussion on drone warfare. <em>Journal of the Learning Sciences</em>, <em>27</em>(2), 183–223. </p>
+<p class="doc-p">Philip, T. M., & Sengupta, P. (2021). Theories of learning as theories of society: A contrapuntal approach to expanding disciplinary authenticity in computing. <em>Journal of the Learning Sciences</em>, <em>30</em>(2), 330–349.</p>
+<p class="doc-p">Rajala, A., Cole, M., & Esteban-Guitart, M. (2022). Utopian methodology: Researching educational interventions to promote equity over multiple timescales. Journal of the Learning Sciences, 32(1), 110–136. </p>
+<p class="doc-p">Rummel, N. (2018). One framework to rule them all? Carrying forward the conversation started by Wise and Schwarz. <em>International Journal of Computer-Supported Collaborative Learning</em>, <em>13</em>(1), 123–129.</p>
+<p class="doc-p">Russo, R., & Blikstein, P. (2023). Just asking questions: Can a far-right president turn agentic knowledge construction into political manipulation? <em>Information and Learning Sciences</em>, <em>124</em>(7/8), 197–220. </p>
+<p class="doc-p">Sawyer, R. K. (2022). An introduction to the learning sciences. In K. R. Sawyer (Ed.), The Cambridge handbook of the learning sciences, 3, (pp. 1–24).</p>
+<p class="doc-p">Selwyn, N. (2022). The future of AI and education: Some cautionary notes. <em>European Journal of Education</em>, <em>57</em>(4), 620–631.</p>
+<p class="doc-p">Sheridan, K. M., Zhang, X., & Konopasky, A. W. (2022). Strategic shifts: How studio teachers use direction and support to build learner agency in the figured world of visual art. Journal of the Learning Sciences, 31(1), 14–42. </p>
+<p class="doc-p">Stanley, J. (2018). <em>How fascism works: The politics of us and them</em>. Random House.</p>
+<p class="doc-p">Starbird, K., DiResta, R., & DeButts, M. (2023). Influence and improvisation: Participatory disinformation during the 2020 US election. <em>Social Media + Society</em>, <em>9</em>(2), 20563051231177943. </p>
+<p class="doc-p">Táíwò, O. O. (2022). <em>Elite capture: How the powerful took over identity politics (and everything else)</em>. Pluto Press.</p>
+<p class="doc-p">The Politics of Learning Writing Collective. (2017). The learning sciences in a new era of U.S. nationalism. <em>Cognition and Instruction</em>, <em>35</em>(2), 91–102. </p>
+<p class="doc-p">Walsh, C. E. (2015). Decolonial pedagogies walking and asking. Notes to Paulo Freire from AbyaYala. <em>International Journal of Lifelong Education</em>, <em>34</em>(1), 9–21.</p>
+<p class="doc-p">Wise, A. F., & Schwarz, B. B. (2017). Visions of CSCL: Eight provocations for the future of the field. <em>International Journal of Computer-Supported Collaborative Learning</em>, <em>12</em>(4), 423–467. </p>
+<h2 class="doc-h1">Hybrid facilitation plan</h2>
+<p class="doc-p">To facilitate accessibility and attendance for those who will not be able to attend the conference in person, especially accounting for the challenging political climate, we will offer a hybrid symposium. Towards that end, we will provide a variety of asynchronous, synchronous, online, and in-person opportunities for engagement before, during, and after the sessions.</p>
+<h3 class="doc-h2">Before the session</h3>
+<p class="doc-p">We will create a form of asynchronous engagement with the provocations through a website that includes a 30-second pitch of each provocation as a short video, along with its respective author(s) and written section. We will send out a call to the community to engage with us as part of this panel and help inform the field. We will also provide them with a way for the community to provide feedback on these provocations through a survey, as well as suggest additional provocations. The co-chairs will analyze the data from the survey to identify questions for our panel as well as relevant themes that can be shared during the panel. This modality will allow scholars across the community to engage and give their perspectives on these provocations, which may also serve as a form of (public) data collection and feedback for a longer journal article.  </p>
+<h3 class="doc-h2">During the session</h3>
+<p class="doc-p">We will begin the live session with a 5-10-minute introduction from the co-chairs, introducing the provocations' background, aims, and format of the session, and each of the participants. We then envision having each author take five minutes to present their provocation as fodder for a discussion with our panel. </p>
+<p class="doc-p">For each provocation, the authors will introduce their claim and differing perspectives, and Wise and Worseley will each respond in ways that analyze the trade-offs associated with differing positions. Thus, all four authors will not present one after the other, but rather each author's provocation will be followed by a panel discussion, and then we will move on to the next provocation. We envision each five-minute introduction to a provocation to be followed by a five to 10-minute discussion with the panel, with added time for the audience (in-person and online) to add their thoughts as well. </p>
+<p class="doc-p">Our panel will consist of two primary discussants, Wise and Worseley, with Borge as a facilitator. The authors will also be seated near the panel to encourage a broader discussion across all the authors and discussants.   </p>
+<h3 class="doc-h2">Hybrid management and navigation</h3>
+<p class="doc-p">We plan to use Zoom or the conference video technology to provide real-time access to the discussion. Sebastian Simon will serve as the hybrid ambassador, managing the Zoom logistics and rooms throughout the session with support from Breneil Malcolm. They will co-moderate the management of online logistics, including troubleshooting audio, video, screen-sharing capabilities, and providing support to presenters and discussants as needed.</p>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROVOCATIONS -->
+<section id="provocations">
+  <div class="inner">
+    <div class="sk">The Provocations</div>
+    <h2 class="sh">Four Provocations for the Next Decade</h2>
+    <div class="rule"></div>
+    <p class="sdesc">Invited researchers from the ICLS and CSCL communities propose new provocations that focus both on the changing technological landscape and the need to center diverse perspectives in technology-enhanced collaboration.</p>
+    <div class="prov-grid">
+      <div class="prov-card">
+        <div class="prov-num">Provocation 01</div>
+        <div class="prov-title">As a cultural practice that sustains the conditions for democracy, collaborative learning embodies a societal responsibility that must be prioritized</div>
+        <div class="prov-author">Sebastian Simon, Mia Čarapina &amp; Ban Mouid Shiwalia</div>
+        <div class="prov-excerpt">Divisive tendencies are on the rise worldwide. Democratic institutions are under strain, and technological infrastructures increasingly amplify fragmentation. Collaborative learning is not merely a pedagogical method, but a cultural practice that sustains the very conditions for democracy in an age of technological individualisation.</div>
+      </div>
+      <div class="prov-card">
+        <div class="prov-num">Provocation 02</div>
+        <div class="prov-title">We need to develop solidarity with communities to redefine what we mean by educational change</div>
+        <div class="prov-author">Natalie Rae</div>
+        <div class="prov-excerpt">It is necessary to redefine what educational change might mean in the context of the intensifying socioecological crisis and the rise of generative AI tools. A shift from tool-centric collaboration to collective, justice-oriented approaches that foreground collaboration as solidarity with social movements for self-determination.</div>
+      </div>
+      <div class="prov-card">
+        <div class="prov-num">Provocation 03</div>
+        <div class="prov-title">We need to bridge epistemological differences between LS and CSCL to cultivate more productive collaborations</div>
+        <div class="prov-author">Martin Greisel</div>
+        <div class="prov-excerpt">Any call to collaborate between LS and CSCL will be ineffective if it remains unclear how to bridge epistemological differences. The challenge is not bridging communities but fostering dialogue across interpretative, analytical, design-based, and social justice-oriented epistemologies that cut across both.</div>
+      </div>
+      <div class="prov-card">
+        <div class="prov-num">Provocation 04</div>
+        <div class="prov-title">None of this matters if we don't stop authoritarianism</div>
+        <div class="prov-author">Tanner Vea</div>
+        <div class="prov-excerpt">The CSCL community and the broader learning sciences community must work together now for a field that is worthy of our moment. We cannot do so by policing each other into asking smaller and smaller questions about learning, as if retreating from the conditions of our lives will protect the sanctity of the scientific endeavor.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- VIDEOS -->
+<section id="videos">
+  <div class="inner">
+    <div class="sk">Author Perspectives</div>
+    <h2 class="sh">The Greatest Challenges Ahead &mdash;<br>In Their Own Words</h2>
+    <div class="rule" style="background:var(--gold-light)"></div>
+    <p class="sdesc">An introduction to the symposium followed by a short video for each of the four provocations.</p>
+    <div class="vgrid" id="vgrid">
+      <div class="vcard">
+        <div class="vcard-label" style="color:#b8933a">Introduction</div>
+        <div class="vcard-title">Symposium Introduction</div>
+        <div class="vcard-speakers">Breneil Malcolm &amp; Marcela Borge</div>
+        <div class="vembed">
+          <iframe width="560" height="315" src="https://www.youtube.com/embed/lTZYrHjwTPA?si=0w5xUJ-YGPOCmeD5" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+        </div>
+      </div>
+      <div class="vcard">
+        <div class="vcard-label" style="color:#2a6b6b">Provocation 1</div>
+        <div class="vcard-title">Collaborative learning as a democratic cultural practice</div>
+        <div class="vcard-speakers">Sebastian Simon, Mia &Ccaron;arapina &amp; Ban Mouid Shiwalia</div>
+        <div class="vembed">
+          <iframe width="560" height="315" src="https://www.youtube.com/embed/0Jysakc8DN4?si=5oGTmlSg95-coIgR" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+        </div>
+      </div>
+      <div class="vcard">
+        <div class="vcard-label" style="color:#c4503a">Provocation 2</div>
+        <div class="vcard-title">Developing solidarity with communities to redefine educational change</div>
+        <div class="vcard-speakers">Natalie Rae</div>
+        <div class="vembed">
+          <iframe width="560" height="315" src="https://www.youtube.com/embed/gUn5EAaIqIA?si=MOJzZWUomtV4DPWQ" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+        </div>
+      </div>
+      <div class="vcard">
+        <div class="vcard-label" style="color:#5a7a9a">Provocation 3</div>
+        <div class="vcard-title">Bridging epistemological differences between LS and CSCL</div>
+        <div class="vcard-speakers">Martin Greisel</div>
+        <div class="vembed">
+          <iframe width="560" height="315" src="https://www.youtube.com/embed/0DIs-ORm7Zo?si=Rwk49l6l5iySPg3A" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+        </div>
+      </div>
+      <div class="vcard">
+        <div class="vcard-label" style="color:#7a5a9a">Provocation 4</div>
+        <div class="vcard-title">None of this matters if we don&rsquo;t stop authoritarianism</div>
+        <div class="vcard-speakers">Tanner Vea</div>
+        <div class="vembed">
+          <iframe width="560" height="315" src="https://www.youtube.com/embed/Q0g32MUSZ9c?si=Ls7imtY6DNyiOA8j" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CHALLENGE -->
+<section id="challenge">
+  <div class="inner">
+    <div class="sk">Community Voice</div>
+    <h2 class="sh">What Do <em style="font-family:var(--serif);color:var(--gold)">You</em> Think Is<br>The Greatest Challenge?</h2>
+    <div class="rule"></div>
+    <p class="sdesc">Your perspective joins a live, growing picture of what our community believes matters most. All responses are stored, AI-analyzed for themes, and visualized in real time — and may inform a longer journal article.</p>
+    <div class="cgrid">
+      <div class="fcard">
+        <h3>Share Your Perspective</h3>
+        <p class="fsub">What is the single most important challenge facing the Learning Sciences and/or CSCL in the next ten years?</p>
+        <div class="fg">
+          <label>Full name *</label>
+          <input type="text" id="ni" placeholder="First and last name (required)" required>
+          <div id="verify-status" style="display:none;margin-top:6px;font-size:12px;font-family:var(--mono);align-items:center;gap:6px"></div>
+        </div>
+        <div class="fg"><label>Institution *</label><input type="text" id="inst" placeholder="University or organization (required)" required></div>
+        <div class="fg">
+          <div style="font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-light);margin-bottom:4px">Step 1 of 2 — Optional</div>
+          <label>Which existing provocation resonates most? (select all that apply)</label>
+          <div style="display:flex;flex-direction:column;gap:8px;margin-top:4px">
+            <label class="prov-check">
+              <input type="checkbox" name="prov" value="Provocation 1">
+              <span class="prov-check-label">
+                <span class="prov-check-num" style="background:rgba(42,107,107,.15);color:var(--teal)">P1</span>
+                Collaborative learning as a democratic cultural practice
+                <span class="prov-check-authors">Simon, Čarapina &amp; Shiwalia</span>
+              </span>
+            </label>
+            <label class="prov-check">
+              <input type="checkbox" name="prov" value="Provocation 2">
+              <span class="prov-check-label">
+                <span class="prov-check-num" style="background:rgba(196,80,58,.12);color:var(--coral)">P2</span>
+                Developing solidarity with communities to redefine educational change
+                <span class="prov-check-authors">Natalie Rae</span>
+              </span>
+            </label>
+            <label class="prov-check">
+              <input type="checkbox" name="prov" value="Provocation 3">
+              <span class="prov-check-label">
+                <span class="prov-check-num" style="background:rgba(90,122,154,.15);color:#5a7a9a">P3</span>
+                Bridging epistemological differences between LS and CSCL
+                <span class="prov-check-authors">Martin Greisel</span>
+              </span>
+            </label>
+            <label class="prov-check">
+              <input type="checkbox" name="prov" value="Provocation 4">
+              <span class="prov-check-label">
+                <span class="prov-check-num" style="background:rgba(122,90,154,.15);color:#7a5a9a">P4</span>
+                None of this matters if we don't stop authoritarianism
+                <span class="prov-check-authors">Tanner Vea</span>
+              </span>
+            </label>
+            <label class="prov-check">
+              <input type="checkbox" name="prov" value="None of the above">
+              <span class="prov-check-label">
+                <span class="prov-check-num" style="background:rgba(138,128,120,.12);color:var(--ink-light)">—</span>
+                None of the above
+                <span class="prov-check-authors"></span>
+              </span>
+            </label>
+          </div>
+        </div>
+        <div style="margin:1.5rem 0 1.25rem;border-top:2px solid var(--gold);padding-top:1.25rem;display:flex;flex-direction:column;gap:4px">
+          <div style="font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);font-weight:500">Step 2 of 2 — Required</div>
+          <div style="font-family:var(--serif);font-size:1.1rem;font-weight:700;color:var(--ink)">Now share your own provocation</div>
+          <div style="font-size:13px;color:var(--ink-mid);line-height:1.6">Whether or not you selected one above, we want to hear the challenge <em>in your own words</em>. What do you see as the single most important challenge facing the Learning Sciences and/or CSCL in the next ten years?</div>
+        </div>
+        <div class="fg"><textarea id="ct" maxlength="500" placeholder="Describe the challenge you see as most critical for our field..."></textarea><div class="ccount"><span id="cc">0</span> / 500</div></div>
+        <div class="fg"><label>Your role</label>
+          <select id="rs"><option value="">Select role...</option><option>Graduate Student</option><option>Junior Scholar</option><option>Mid-career Scholar</option><option>Senior Scholar</option><option>Industry / Practice</option><option>Other</option></select>
+        </div>
+        <div class="fg"><label>Country / Region</label><input type="text" id="li" placeholder="e.g. United States, Germany, Japan..."></div>
+        <button class="sbtn" id="sb" onclick="doSubmit()">
+          <span id="st">Submit Perspective</span>
+          <svg id="ss" style="display:none;animation:spin 1s linear infinite" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-18 0"/></svg>
+        </button>
+        <div class="sbnr" id="sbnr"></div>
+        <div id="db-error-msg" style="display:none;margin-top:.75rem;padding:10px 14px;background:#faeae6;border:1px solid #c4503a;border-radius:4px;font-size:12px;color:#c4503a;font-family:var(--mono);word-break:break-all"></div>
+        <div id="dup-warn" style="display:none;margin-top:.75rem;padding:10px 14px;background:#faeae6;border:1px solid #c4503a;border-radius:4px;font-size:13px;color:#c4503a">A response from this name and institution has already been recorded.</div>
+      </div>
+      <div class="vstack">
+        <div class="vc"><div class="srow">
+          <div class="sbox"><div class="snum" id="ct0">0</div><div class="slbl">Responses</div></div>
+          <div class="sbox"><div class="snum" id="cc0">0</div><div class="slbl">Countries</div></div>
+          <div class="sbox"><div class="snum" id="verified-count" style="color:var(--teal)">0</div><div class="slbl">Verified Scholars</div></div>
+        </div>
+        <div style="margin-top:.75rem;display:flex;align-items:center;gap:6px;font-family:var(--mono);font-size:10px;color:var(--ink-light)">
+          <span style="width:7px;height:7px;border-radius:50%;background:var(--teal);display:inline-block;animation:dp 2s ease-in-out infinite"></span>
+          Live &mdash; synced with database
+        </div>
+        <div style="margin-top:.75rem;padding:.75rem 1rem;background:var(--cream);border-radius:var(--r);font-size:12px;color:var(--ink-light);font-family:var(--mono);display:flex;justify-content:space-between;align-items:center">
+          <span>Weighted response total</span>
+          <span style="font-weight:500;color:var(--ink)" id="weighted-total">0</span>
+        </div></div>
+        <div class="vc">
+          <div class="vch"><h4>Emerging Themes</h4><div class="vsub">AI-identified · updates after each submission</div></div>
+          <div class="ail" id="ail"><div class="d"></div><div class="d"></div><div class="d"></div><span>Analyzing themes...</span></div>
+          <div class="tlist" id="tlist"></div>
+          <div class="empty" id="te">Themes emerge as responses accumulate.</div>
+        </div>
+        <div class="vc">
+          <div class="vch"><h4>Geographic Distribution</h4><div class="vsub">Bubble size reflects number of respondents</div></div>
+          <div class="mwrap" id="mwrap"><div class="empty">Map loads as responses come in.</div></div>
+          <div class="ctags" id="ctags"></div>
+        </div>
+        <div class="vc">
+          <div class="vch"><h4>Respondents by Role</h4><div class="vsub">Who is shaping this conversation</div></div>
+          <div class="rwrap"><canvas id="rc"></canvas></div>
+        </div>
+        <div class="vc">
+          <div class="vch"><h4>Recent Perspectives</h4><div class="vsub">Live community input</div></div>
+          <div class="rfeed" id="rf"><div class="empty">Be the first to contribute.</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- EXPORT -->
+<section id="export">
+  <div class="inner">
+    <div class="sk" style="justify-content:center;display:flex">Research Data</div>
+    <h2>Export Community Responses</h2>
+    <p>Download all collected perspectives as a structured Excel or CSV file for qualitative coding, archival, or further analysis. Data may also inform a longer journal article.</p>
+
+    <div style="max-width:420px;margin:0 auto;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);border-radius:var(--rlg);padding:2rem">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:1.25rem">
+        <svg width="18" height="18" fill="none" stroke="var(--gold-light)" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        <span style="font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold-light)">Password required</span>
+      </div>
+      <div style="font-size:13px;color:rgba(255,255,255,.45);margin-bottom:1.25rem;line-height:1.6">This data is restricted to authorized researchers. Enter the download password to access.</div>
+      <div style="display:flex;gap:8px;margin-bottom:1rem">
+        <input type="password" id="export-pw" placeholder="Enter password..." style="flex:1;padding:11px 14px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.15);border-radius:var(--r);color:#fff;font-family:var(--mono);font-size:13px;outline:none" onkeydown="if(event.key==='Enter') unlockExport()">
+        <button onclick="unlockExport()" style="padding:11px 18px;background:var(--gold);color:#000;border:none;border-radius:var(--r);font-family:var(--serif);font-weight:700;font-size:13px;cursor:pointer;white-space:nowrap;transition:background .2s" onmouseover="this.style.background='var(--gold-light)'" onmouseout="this.style.background='var(--gold)'">Unlock</button>
+      </div>
+      <div id="pw-error" style="display:none;font-size:12px;color:#e85d4a;font-family:var(--mono);margin-bottom:1rem">&#x2717; Incorrect password &mdash; please try again.</div>
+      <div id="export-buttons" style="display:none;flex-direction:column;gap:8px">
+        <div style="font-size:12px;color:var(--teal);font-family:var(--mono);margin-bottom:4px">&#x2713; Access granted</div>
+        <button class="btn btn-gold" onclick="exportXLSX()" style="width:100%;justify-content:center">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Download Excel (.xlsx)
+        </button>
+        <button class="btn btn-outline" onclick="exportCSV()" style="width:100%;justify-content:center;color:rgba(255,255,255,.65);border-color:rgba(255,255,255,.2)">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Download CSV
+        </button>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<footer>ISLS 2026 · Revisiting Wise &amp; Schwarz's Provocations for CSCL · Partnerships for Transformation and Educational Change · Final paper forthcoming June 2026</footer>
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+// ─── HELPERS ─────────────────────────────────────────────────────────────────
+function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+// ─── SUPABASE CONFIG ──────────────────────────────────────────────────────────
+var SUPA_URL = 'https://vfkxoptdmepobrikjhel.supabase.co';
+var SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZma3hvcHRkbWVwb2JyaWtqaGVsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM5MjkzNzksImV4cCI6MjA4OTUwNTM3OX0.KPqe8zGl498kgo00qDD1t7bWh7I6d4a1qzGMV-pyXPw';
+
+function supaGet(table) {
+  return fetch(SUPA_URL + '/rest/v1/' + table + '?select=*&order=created_at.asc', {
+    method: 'GET',
+    headers: {
+      'apikey': SUPA_KEY,
+      'Authorization': 'Bearer ' + SUPA_KEY
+    }
+  }).then(function(r) { return r.json(); });
+}
+
+function supaInsert(table, row) {
+  return fetch(SUPA_URL + '/rest/v1/' + table, {
+    method: 'POST',
+    headers: {
+      'apikey': SUPA_KEY,
+      'Authorization': 'Bearer ' + SUPA_KEY,
+      'Content-Type': 'application/json',
+      'Prefer': 'return=minimal'
+    },
+    body: JSON.stringify(row)
+  }).then(function(r) {
+    if (!r.ok) return r.text().then(function(t) { throw new Error(t); });
+    return r;
+  });
+}
+
+function supaUpdate(table, match, data) {
+  var query = Object.keys(match).map(function(k) {
+    return k + '=eq.' + encodeURIComponent(match[k]);
+  }).join('&');
+  return fetch(SUPA_URL + '/rest/v1/' + table + '?' + query, {
+    method: 'PATCH',
+    headers: {
+      'apikey': SUPA_KEY,
+      'Authorization': 'Bearer ' + SUPA_KEY,
+      'Content-Type': 'application/json',
+      'Prefer': 'return=minimal'
+    },
+    body: JSON.stringify(data)
+  }).then(function(r) {
+    if (!r.ok) return r.text().then(function(t) { throw new Error(t); });
+    return r;
+  });
+}
+
+function loadFromSupabase() {
+  supaGet('responses')
+    .then(function(rows) {
+      if (!Array.isArray(rows)) {
+        console.warn('Supabase load error:', rows);
+        return;
+      }
+      responses = rows.map(function(r) {
+        return {
+          id: r.id, ts: r.created_at,
+          name: r.name || '', institution: r.institution || '',
+          role: r.role || '', location: r.location || '',
+          verified: !!r.verified, weight: r.weight || 1,
+          provocations: r.provocations ? r.provocations.split('; ').filter(Boolean) : [],
+          text: r.text || ''
+        };
+      });
+      saveLocal(responses);
+      updateAll();
+      if (responses.length) analyzeThemes();
+    })
+    .catch(function(e) { console.warn('Supabase load failed:', e); });
+}
+
+function saveToSupabase(entry) {
+  return supaInsert('responses', {
+    name: entry.name, institution: entry.institution,
+    role: entry.role, location: entry.location,
+    verified: entry.verified, weight: entry.weight,
+    provocations: (entry.provocations || []).join('; '),
+    text: entry.text
+  }).then(function() {
+    showDbSuccess();
+  }).catch(function(e) {
+    showDbError(String(e));
+    throw e;
+  });
+}
+
+function updateSupabase(entry) {
+  return supaUpdate('responses',
+    { name: entry.name, institution: entry.institution },
+    {
+      role: entry.role, location: entry.location,
+      verified: entry.verified, weight: entry.weight,
+      provocations: (entry.provocations || []).join('; '),
+      text: entry.text
+    }
+  ).then(function() {
+    showDbSuccess();
+  }).catch(function(e) {
+    showDbError(String(e));
+    throw e;
+  });
+}
+
+function showDbError(msg) {
+  var el = document.getElementById('db-error-msg');
+  if (el) { el.textContent = 'Database error: ' + msg; el.style.display = 'block'; }
+  console.error('Supabase error:', msg);
+}
+
+function showDbSuccess() {
+  var el = document.getElementById('db-error-msg');
+  if (el) el.style.display = 'none';
+}
+
+// ─── DATA STORAGE ─────────────────────────────────────────────────────────────
+var STORAGE_KEY = 'cscl25_resp_v3';
+function saveLocal(arr) { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(arr)); } catch(e) { console.warn(e); } }
+function loadLocal() { try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; } catch(e) { return []; } }
+var responses = loadLocal();
+
+
+
+document.getElementById('ct').addEventListener('input', function() {
+  document.getElementById('cc').textContent = this.value.length;
+});
+
+// ─── SCHOLAR VERIFICATION (OpenAlex) ─────────────────────────────────────────
+// ─── KNOWN LS/CSCL SCHOLARS (always verify regardless of API) ────────────────
+// Add names here as the symposium grows — last name + first initial is enough
+var KNOWN_SCHOLARS = [
+  // ── Symposium authors ──────────────────────────────────────────────────────
+  'marcela borge','breneil malcolm','breniel malcolm','alyssa wise','marcelo worsley',
+  'sebastian simon','tanner vea','natalie rae','martin greisel',
+  'mia carapina','ban mouid shiwalia','ban shiwalia',
+  // ── CSCL 2017 proceedings authors (Smith, Borge, Mercier & Lim, eds.) ─────
+  'william tarimo','timothy hickey','mona emara','michael tscholl','yi dong','gautam biswas',
+  'melanie erkens','daniel bodemer','janet walkoe','michelle wilkerson','andrew elby',
+  'fernando rodriguez','kimberly price','kristy elizabeth boyer',
+  'michael madaio','justine cassell','amy ogan',
+  'jennifer olsen','nikol rummel','vincent aleven',
+  'hee-sun lee','hee sun lee','amy pallant','sarah pryputniewicz','trudi lord','ou liu',
+  'omaima almatrafi','aditya johri','ty hollett',
+  'breanne litts','debora lui','sari widman','justice walker','yasmin kafai',
+  'kate thompson','les dawes','tanya doyle','harry kanasa','katherine nickels','david nutchey',
+  'soo hyeon kim','heather toomey zimmerman',
+  'susan walker','nancy law','leming liang','kenneth cheng',
+  'lijun ni','fred martin','rikke magnussen','anna lindenhoff elming',
+  'kshitij sharma','ioannis leftheriotis','jama noor','michail giannakos',
+  'ben rydal shapiro','rogers hall',
+  'gabriela richard','sagun giri','jason yip','travis windleharth','jin ha lee',
+  'brendan eagan','bradley rogers','ronald serlin','andrew ruis','golnaz arastoopour irgens','david williamson shaffer',
+  'elizabeth pier','joshua raclaw','cecilia ford','anna kaatz','molly carnes','mitchell nathan',
+  'ung-sang lee','ung sang lee','kimberly gomez','elizabeth koh','helen hong',
+  'jarek sierschynski','scott spaulding','donal healion','sam russell','mutlu cukurova','daniel spikol',
+  'alissa antle','jillian warren',
+  'michelle lui','tom moher','rebecca quintana','james slotta',
+  'jonathan vitale','lauren applebaum','marcia linn','marcia c linn','marcia c. linn',
+  'alejandro andrade','chris georgen','michael stucker',
+  'xu wang','miaomiao wen','carolyn rose','carolyn rosé',
+  'brian belland','nam ju kim','mark weiss','jacob piland',
+  'jingjing sun','julia jackson','mary burns','richard anderson',
+  'christian hartmann','charleen brand',
+  'susan kelly','luettamae lawrence','emma mercier',
+  'dan tao','jianwei zhang','dandan gao','kenneth wright','kyle fricke',
+  'frank de jong','joan van den ende','hennie van heijst','yoshiaki matsuzawa','paul kirschner',
+  'mei-hwa chen','mei hwa chen','feng chen','erick velazquez godinez','sylvie ratte',
+  'bodong chen','carol chan','jan van aalst','christine yang','jun oshima',
+  'cindy hmelo-silver','cindy hmelo silver',
+  'carl bereiter','ulrike cress','frank fischer','kai hakkarainen','marlene scardamalia','freydis vogel',
+  'patrick jermann','pierre dillenbourg','martina rau','zach pardos','bertrand schneider',
+  'sarah dangelo','darren gergle','luis prieto','therese laferriere',
+  'lei liu','jiangang hao','jessica andrews','mengxiao zhu','robert mislevy','patrick kyllonen',
+  'alina von davier','deirdre kerr','thales ricarte','art graesser',
+  'scott greenwald','alexander kulik','sue cobb','sarah parsons','nigel newbutt',
+  'victor lee','carrie tzou','megan bang','philip bell','shelley stromholt','nancy price','meixi ng',
+  'orkan telhan','richard davis','brigid barron',
+  'catherine dornfeld','naxin zhao','sadhana puntambekar',
+  'nishan perera','alyssa friend wise','sally wu',
+  'helen fake','jennifer whiteman','brenda bannan',
+  'mehmet celepkolu','joseph wiggins','kyla mcmullen',
+  'kristen shinohara','cynthia bennett','jacob wobbrock','wanda pratt',
+  'na sun','mary beth rosson','noora fatima noushad','jooeun shim','susan yoon',
+  'aditi wagh','sharona levy','michael horn','bryan guo','corey brady','uri wilensky',
+  'maedeh kazemitabar','susanne lajoie','engida gebre',
+  'jessica mckeown','heisawn jeong','kylie hartley','roosevelt faulkner',
+  'marielle dado','tobias hecking','heinz ulrich hoppe',
+  'yotam hod','ornit sagy','julia eberle','karsten stegmann','alain barrat','kristine lund',
+  'hai-peng wan','qi wang','sheng-quan yu',
+  'scott crossley','mihai dascalu','danielle mcnamara','ryan baker','stefan trausan-matu',
+  'christa asterhan','edith bouton','gabriel gutu','traian rebedea','alain breuleux',
+  'jooyoung seo','mona alqahtani','xueying ouyang',
+  'beat schwendimann','bram de wever','raija hamalainen','alberto cattaneo',
+  'nicolae nistor','yvonne serafin','anna keune','kylie peppler',
+  'ayano ohsaki','yuki yamada','ritsuko oshima','alisa acosta',
+  'sarah bishara','jennifer baltes','taha hamid','taihua li','denise nacu','caitlin martin','jonathan gemmell','nichole pinkard',
+  'dimitra tsovaltzi','nikita dutta','thomas puhl','armin weinberger',
+  'joey huang','rebecca jordan','troy frensley','steven gray','greg newman',
+  'nicole martin','dana gnesdilow','samantha finkelstein',
+  'becca shareff','brian gravel','yara shaban','vasiliki laina',
+  'toshio mochizuki','takehiro wakimoto','hiroshi sasaki','hideo funaoi','yoshihiko kubota','hideyuki suzuki','hiroshi kato',
+  'omid noroozi','javad hatami','martin mulder','harm biemans',
+  'rafikh shaikh','harshit agrawal',
+  'yong ju jung','dhvani toprani','shulong yan',
+  'nicolaas vanmeerten','keisha varma',
+  'joyojeet pal','anandhi viswanathan','justin plevinski','jennifer weible','michael deschryver',
+  'lara johanna schmitt','elizabeth mcbride','richard lee davis','paulo blikstein',
+  'miyoung park','emma anderson',
+  'maggie renken','jonathan cohen','brendan calandra',
+  'katie headrick taylor','deborah silvis','michelle friend',
+  'yiannis georgiou','eleni kyza',
+  'leanne ma','samuel tan','chew lee teo',
+  'camillia matuk','jiayuan zhang',
+  'sree aurovindh viswanathan','kurt vanlehn',
+  'andras csanadi','david shaffer','ingo kollar',
+  'jessica roberts','leilah lyons','matthieu quignard',
+  'uzi brami','iris tabak','irene-angelica chounta','bruce mclaren','maralee harrell',
+  'julia erdmann','nina christmann','malte elson','thomas herrmann','nicole kramer','astrid wichmann',
+  'rachel harsley','barbara di eugenio','nick green','davide fossati',
+  'chanmin kim','jiangmei yuan','cory gleasman','minyoung shin',
+  'melvin chan','ahmad khanlari','monica resendes','gaoxia zhu',
+  'andy ng','zahirah sedik','yu ling lee',
+  'ying-tien wu','li-jen wang','teng-yao cheng','haipeng wan',
+
+
+  // Additional LS/CSCL scholars
+  'miwa takeuchi',
+  'miwa a. takeuchi',
+  'jasmine ma',
+  'crina damsa',
+  'stephanie teasley',
+  'aireale rodgers',
+  'aireale j. rodgers',
+  'sherice clark',
+  'sherice clarke',
+  'francisco castro',
+  'zaynab gates',
+  'kaleb germinaro',
+  'sandra zuniga ruiz',
+  'ethan chang',
+  'carl haynes-magyar',
+  'carl c. haynes-magyar',
+  'chris jadallah',
+  'won jung kim',
+  'areej mawasi',
+  'mariam alhashmi',
+  'claire alkouatli',
+  'jessica chandras',
+  'jessica sujata chandras',
+  'tiffany nyachae',
+  'tiffany m. nyachae',
+  'angela stewart',
+  'fabio campos',
+  'fernando carnauba',
+  'raquel coelho',
+  'cassia fernandez',
+  'tatiana hochgreb',
+  'livia macedo',
+  'ravit duncan',
+  'ravit golan duncan',
+  'joshua danish',
+  'joshua a. danish',
+  'oskar lindwall',
+  'joseph polman',
+  'joseph l. polman',
+  'bill sandoval',
+  'william sandoval',
+  'carolyn penstein rose',
+  'eleni a. kyza',
+  'susan goldman',
+  'marcia c. linn',
+  'naomi miyake',
+  'claire omalley',
+  'roy pea',
+  'christopher hoadley',
+  'sahana murthy',
+  'leema berland',
+  'liz charles',
+  'wenli chen',
+  'ton de jong',
+  'barry fishman',
+  'mitchell j. nathan',
+  'james pellegrino',
+  'william penuel',
+  'jeremy roschelle',
+  'allan collins',
+  'bat-sheva eylon',
+  'kris gutierrez',
+  'yael kali',
+  'carol lee',
+  'carol d. lee',
+  'sten ludvigsen',
+  'miguel nussbaum',
+  'brian reiser',
+  'clark chinn',
+  'kim gomez',
+  'louis gomez',
+  'sanna jarvela',
+  'chee-kit looi',
+  'susan jurow',
+  'susan mckenney',
+  'nailah nasir',
+  'nailah suad nasir',
+  'nancy songer',
+  'melissa gresalfi',
+  'ulrich hoppe',
+  'ilana horn',
+  'edna tan',
+  'erica halverson',
+  'thomas philip',
+  'angela calabrese barton',
+  'mimi recker',
+  'jim slotta',
+  'timothy koschmann',
+  'janet kolodner',
+  'joshua radinsky',
+  'gerry stahl',
+  'friedrich hesse',
+];
+var lastVerifiedName = '';
+var lastVerifiedResult = null;
+
+function normalizeName(name) {
+  return name.toLowerCase()
+    .replace(/[àáâãäå]/g,'a').replace(/[èéêë]/g,'e')
+    .replace(/[ìíîï]/g,'i').replace(/[òóôõö]/g,'o')
+    .replace(/[ùúûü]/g,'u').replace(/[ýÿ]/g,'y')
+    .replace(/[čć]/g,'c').replace(/[šś]/g,'s')
+    .replace(/[žź]/g,'z').replace(/[ñ]/g,'n')
+    .replace(/[^a-z\s]/g,'').trim();
+}
+
+function isKnownScholar(name) {
+  var n = normalizeName(name);
+  return KNOWN_SCHOLARS.some(function(k) {
+    var kn = normalizeName(k);
+    // Match if full name contains the known name or vice versa
+    return n === kn || n.indexOf(kn) >= 0 || kn.indexOf(n) >= 0;
+  });
+}
+
+function withTimeout(promise, ms) {
+  var timeout = new Promise(function(_, reject) {
+    setTimeout(function() { reject(new Error('timeout')); }, ms);
+  });
+  return Promise.race([promise, timeout]);
+}
+
+function showVerifyStatus(vs, verified) {
+  vs.style.display = 'flex';
+  if (verified) {
+    vs.innerHTML = '<span style="color:var(--teal)">&#x2713; Verified Scholar</span>';
+  } else {
+    vs.innerHTML = '<span style="color:var(--ink-light)">&#x25CB; Unverified Scholar</span>';
+  }
+}
+
+function verifyScholar(name) {
+  if (!name || name.length < 4) return Promise.resolve(null);
+  var vs = document.getElementById('verify-status');
+
+  // Return cached result and show message
+  if (name === lastVerifiedName && lastVerifiedResult !== null) {
+    showVerifyStatus(vs, lastVerifiedResult.verified);
+    return Promise.resolve(lastVerifiedResult);
+  }
+
+  vs.style.display = 'flex';
+
+  // Check hardcoded list FIRST — instant, no API
+  if (isKnownScholar(name)) {
+    lastVerifiedName = name;
+    lastVerifiedResult = { verified: true, fromList: true };
+    showVerifyStatus(vs, true);
+    return Promise.resolve(lastVerifiedResult);
+  }
+
+  // Not on list — show Unverified immediately, then try API in background
+  lastVerifiedName = name;
+  lastVerifiedResult = { verified: false };
+  showVerifyStatus(vs, false);
+
+  // Try API silently — update to Verified if found
+  var norm = normalizeName(name);
+  var parts = norm.split(' ').filter(function(p){ return p.length > 1; });
+  var lastName = parts[parts.length - 1];
+  var otherParts = parts.slice(0, -1);
+  var authorUrl = 'https://api.openalex.org/authors?search=' + encodeURIComponent(name) + '&per-page=5&select=id,display_name,works_count&mailto=cscl.symposium@psu.edu';
+
+  withTimeout(fetch(authorUrl), 5000)
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      var authors = data.results || [];
+      var match = null;
+      authors.forEach(function(a) {
+        var an = normalizeName(a.display_name || '');
+        if (an.indexOf(lastName) >= 0 && (otherParts.length === 0 || otherParts.some(function(p){ return an.indexOf(p) >= 0; }))) {
+          if (!match || a.works_count > match.works_count) match = a;
+        }
+      });
+      if (!match) return checkWorksDirectly(name, vs, lastName, otherParts);
+      var authorId = match.id.replace('https://openalex.org/','');
+      var sourceFilter = LS_SOURCES.join('|');
+      var worksUrl = 'https://api.openalex.org/works?filter=author.id:' + authorId + ',primary_location.source.id:' + sourceFilter + '&per-page=5&select=id&mailto=cscl.symposium@psu.edu';
+      return withTimeout(fetch(worksUrl), 5000).then(function(r){ return r.json(); }).then(function(wd){
+        var count = (wd.meta && wd.meta.count) || (wd.results || []).length;
+        if (count === 0) return checkWorksDirectly(name, vs, lastName, otherParts);
+        if (name === lastVerifiedName) {
+          lastVerifiedResult = { verified: true, count: count };
+          showVerifyStatus(vs, true);
+        }
+      });
+    })
+    .catch(function() { /* stay as Unverified */ });
+
+  return Promise.resolve(lastVerifiedResult);
+}
+
+function checkWorksDirectly(name, vs, lastName, otherParts) {
+  var sourceFilter = LS_SOURCES.join('|');
+  var url = 'https://api.openalex.org/works?filter=author.display_name.search:' + encodeURIComponent(name) + ',primary_location.source.id:' + sourceFilter + '&per-page=10&select=id,authorships&mailto=cscl.symposium@psu.edu';
+  return withTimeout(fetch(url), 5000).then(function(r){ return r.json(); })
+    .then(function(data){
+      var works = data.results || [];
+      var matched = works.filter(function(w){
+        return (w.authorships||[]).some(function(a){
+          var an = normalizeName((a.author && a.author.display_name) || '');
+          return an.indexOf(lastName) >= 0 && (otherParts.length === 0 || otherParts.some(function(p){ return an.indexOf(p) >= 0; }));
+        });
+      });
+      if (matched.length > 0 && name === lastVerifiedName) {
+        lastVerifiedResult = { verified: true, count: matched.length };
+        showVerifyStatus(vs, true);
+      }
+    })
+    .catch(function() { /* stay as Unverified */ });
+}
+
+document.getElementById('ni').addEventListener('blur', function() {
+  var name = this.value.trim();
+  if (name.length >= 4) verifyScholar(name);
+});
+
+function findExistingIndex(name, institution) {
+  var key = (name + '|' + institution).toLowerCase().trim();
+  return responses.findIndex(function(r) { return ((r.name + '|' + r.institution).toLowerCase().trim()) === key; });
+}
+
+// ─── SUBMIT ───────────────────────────────────────────────────────────────────
+function doSubmit() {
+  var name = document.getElementById('ni').value.trim();
+  var institution = document.getElementById('inst').value.trim();
+  var text = document.getElementById('ct').value.trim();
+  var selectedProvs = Array.from(document.querySelectorAll('input[name="prov"]:checked')).map(function(cb){ return cb.value; });
+  document.getElementById('dup-warn').style.display = 'none';
+  if (!name) { alert('Please enter your full name.'); document.getElementById('ni').focus(); return; }
+  if (!institution) { alert('Please enter your institution.'); document.getElementById('inst').focus(); return; }
+  if (text.length < 20) { alert('Please write at least 20 characters.'); return; }
+  var btn = document.getElementById('sb');
+  btn.disabled = true;
+  document.getElementById('st').textContent = 'Verifying...';
+  document.getElementById('ss').style.display = 'block';
+  verifyScholar(name).then(function(verifyResult) {
+    var isScholar = verifyResult && verifyResult.verified;
+    var weight = isScholar ? 2 : 1;
+    var entry = {
+      id: Date.now(),
+      ts: new Date().toISOString(),
+      text: text,
+      name: name,
+      institution: institution,
+      role: document.getElementById('rs').value || 'Not specified',
+      location: document.getElementById('li').value.trim() || 'Not specified',
+      verified: isScholar,
+      weight: weight,
+      pubCount: (verifyResult && verifyResult.count) || 0,
+      provocations: selectedProvs
+    };
+    var existingIdx = findExistingIndex(name, institution);
+    if (existingIdx >= 0) {
+      responses[existingIdx] = entry;
+      updateSupabase(entry).catch(function(e) { console.warn('Supabase update error:', e); });
+    } else {
+      responses.push(entry);
+      saveToSupabase(entry).catch(function(e) { console.warn('Supabase save error:', e); });
+    }
+    saveLocal(responses);
+    ['ct','li','ni','inst'].forEach(function(id) { document.getElementById(id).value = ''; });
+    document.querySelectorAll('input[name="prov"]').forEach(function(cb){ cb.checked = false; });
+    document.getElementById('rs').value = '';
+    document.getElementById('cc').textContent = '0';
+    document.getElementById('verify-status').style.display = 'none';
+    lastVerifiedName = ''; lastVerifiedResult = null;
+    btn.disabled = false;
+    document.getElementById('st').textContent = 'Submit Perspective';
+    document.getElementById('ss').style.display = 'none';
+    var sbnr = document.getElementById('sbnr');
+    sbnr.style.cssText = 'display:block;background:var(--teal-pale);border:1px solid var(--teal-light);border-radius:4px;padding:12px 16px;font-size:13px;color:var(--teal);text-align:center;margin-top:1rem';
+    if (isScholar) {
+      sbnr.innerHTML = '&#x2713; Perspective recorded &mdash; Verified Scholar.' + (existingIdx >= 0 ? ' Your previous response has been updated.' : '');
+    } else {
+      sbnr.innerHTML = '&#x2713; Perspective recorded &mdash; Unverified Scholar.' + (existingIdx >= 0 ? ' Your previous response has been updated.' : '');
+    }
+    setTimeout(function() { sbnr.style.display = 'none'; }, 5500);
+    updateAll();
+    analyzeThemes();
+  });
+}
+
+// ─── UPDATE ALL VIZ ───────────────────────────────────────────────────────────
+function updateAll() { updateStats(); updateFeed(); updateRole(); updateMap(); }
+
+function updateStats() {
+  document.getElementById('ct0').textContent = responses.length;
+  var countries = responses.map(function(r){ return r.location; }).filter(function(l){ return l && l !== 'Not specified'; });
+  document.getElementById('cc0').textContent = (new Set(countries)).size;
+  var verified = responses.filter(function(r){ return r.verified; }).length;
+  document.getElementById('verified-count').textContent = verified;
+  var weighted = responses.reduce(function(s,r){ return s + (r.weight || 1); }, 0);
+  document.getElementById('weighted-total').textContent = weighted;
+}
+
+function updateFeed() {
+  var el = document.getElementById('rf');
+  if (!responses.length) { el.innerHTML = '<div class="empty">Be the first to contribute.</div>'; return; }
+  var html = '';
+  var recent = responses.slice().reverse().slice(0, 10);
+  recent.forEach(function(r) {
+    var preview = r.text.slice(0, 200) + (r.text.length > 200 ? '&hellip;' : '');
+    var badge = r.verified ? '<span style="color:var(--teal);font-weight:500">&#x2713; Verified Scholar</span>' : '';
+    var wt = r.weight > 1 ? '<span style="color:var(--gold)">&times;' + r.weight + ' weight</span>' : '';
+    var inst = r.institution ? ', ' + esc(r.institution) : '';
+    var border = r.verified ? 'border-left-color:var(--teal)' : '';
+    var provs = (r.provocations && r.provocations.length) ? '<span style="color:var(--gold-light)">' + r.provocations.map(esc).join(', ') + '</span>' : '';
+    html += '<div class="ri fi" style="' + border + '">'
+      + (provs ? '<div style="font-size:10px;font-family:var(--mono);color:var(--gold);margin-bottom:4px">' + provs + '</div>' : '')
+      + '<div class="rt">' + esc(r.text.slice(0,200)) + (r.text.length>200?'…':'') + '</div>'
+      + '<div class="rm">' + badge + '<span class="rb">' + esc(r.role) + '</span>'
+      + '<span>' + esc(r.name) + inst + '</span>'
+      + '<span>' + esc(r.location) + '</span>'
+      + '<span>' + new Date(r.ts).toLocaleDateString() + '</span>' + wt + '</div></div>';
+  });
+  el.innerHTML = html;
+}
+
+var rChart = null;
+function updateRole() {
+  var ROLES = ['Graduate Student','Junior Scholar','Senior Scholar','Industry / Practice','Other','Not specified'];
+  var COLS  = ['#b8933a','#2a6b6b','#c4503a','#5a7a9a','#888','#ccc'];
+  var nz = [];
+  ROLES.forEach(function(r, i) {
+    var c = responses.filter(function(e){ return e.role === r || (r === 'Not specified' && (!e.role || e.role === 'Not specified')); }).length;
+    if (c > 0) nz.push({ r: r, c: c, col: COLS[i] });
+  });
+  var ctx = document.getElementById('rc').getContext('2d');
+  if (rChart) rChart.destroy();
+  if (!nz.length) {
+    ctx.clearRect(0,0,400,200);
+    ctx.fillStyle = '#8a8078'; ctx.font = '13px DM Sans,sans-serif'; ctx.textAlign = 'center';
+    ctx.fillText('Role data will appear here.', 200, 100); return;
+  }
+  rChart = new Chart(ctx, {
+    type: 'doughnut',
+    data: { labels: nz.map(function(x){ return x.r; }), datasets: [{ data: nz.map(function(x){ return x.c; }), backgroundColor: nz.map(function(x){ return x.col; }), borderWidth: 2, borderColor: '#faf8f3' }] },
+    options: { responsive: true, maintainAspectRatio: false, cutout: '60%', plugins: { legend: { position: 'right', labels: { color: '#4a4540', font: { size: 11, family: 'DM Sans' }, boxWidth: 9, padding: 10,
+      generateLabels: function(chart) {
+        var ds = chart.data.datasets[0];
+        return chart.data.labels.map(function(l, i) { return { text: l + ' (' + ds.data[i] + ')', fillStyle: ds.backgroundColor[i], strokeStyle: ds.backgroundColor[i], index: i }; });
+      }
+    }}}}
+  });
+}
+
+var topoCache = null;
+function updateMap() {
+  var lc = {};
+  responses.forEach(function(r) { if (r.location && r.location !== 'Not specified') lc[r.location] = (lc[r.location] || 0) + 1; });
+  var entries = Object.keys(lc).sort(function(a,b){ return lc[b]-lc[a]; }).slice(0,12);
+  document.getElementById('ctags').innerHTML = entries.map(function(l){ return '<span class="ctag">' + esc(l) + ' &middot; ' + lc[l] + '</span>'; }).join('');
+  if (!entries.length) return;
+  var wrap = document.getElementById('mwrap');
+  wrap.innerHTML = '';
+  var topoUrl = 'https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json';
+  function drawMap(topo) {
+    var W = 560, H = 290;
+    var svg = d3.select(wrap).append('svg').attr('viewBox','0 0 '+W+' '+H).attr('width','100%').style('display','block');
+    var proj = d3.geoNaturalEarth1().scale(90).translate([W/2, H/2+10]);
+    var path = d3.geoPath(proj);
+    svg.selectAll('path').data(topojson.feature(topo, topo.objects.countries).features).join('path')
+      .attr('d', path).attr('fill','#e4dfd0').attr('stroke','#faf8f3').attr('stroke-width',0.5);
+    var CM = {'united states':[-98,39],'usa':[-98,39],'united kingdom':[-1.5,52],'uk':[-1.5,52],'germany':[10,51],'france':[2,47],'netherlands':[5,52],'sweden':[18,59],'norway':[8,60],'denmark':[10,56],'finland':[25,62],'spain':[-4,40],'italy':[12,42],'switzerland':[8,47],'belgium':[4.5,50],'austria':[14,47],'australia':[133,-27],'canada':[-96,56],'new zealand':[172,-41],'japan':[138,36],'china':[104,35],'south korea':[128,36],'singapore':[104,1],'india':[78,20],'israel':[35,31],'south africa':[25,-29],'brazil':[-51,-14],'argentina':[-64,-34],'chile':[-71,-35],'mexico':[-102,24],'colombia':[-74,4],'portugal':[-8,39],'greece':[22,39],'turkey':[35,39],'russia':[90,60],'ukraine':[32,49],'poland':[20,52],'taiwan':[121,24],'indonesia':[118,-2],'ghana':[-1,8],'nigeria':[8,10],'kenya':[38,0],'croatia':[16,45]};
+    var mx = Math.max.apply(null, Object.values(lc));
+    Object.keys(lc).forEach(function(loc) {
+      var key = Object.keys(CM).find(function(k){ return loc.toLowerCase().indexOf(k) >= 0; });
+      if (!key) return;
+      var coords = proj(CM[key]);
+      if (!coords) return;
+      var r = 4 + (lc[loc]/mx)*14;
+      svg.append('circle').attr('cx',coords[0]).attr('cy',coords[1]).attr('r',r+3).attr('fill','rgba(184,147,58,.1)');
+      svg.append('circle').attr('cx',coords[0]).attr('cy',coords[1]).attr('r',r).attr('fill','rgba(184,147,58,.65)').attr('stroke','#b8933a').attr('stroke-width',1);
+    });
+  }
+  if (topoCache) { drawMap(topoCache); return; }
+  fetch(topoUrl).then(function(r){ return r.json(); }).then(function(topo){ topoCache = topo; drawMap(topo); }).catch(function(){ wrap.innerHTML = '<div class="empty">Map unavailable.</div>'; });
+}
+
+// ─── AI THEME ANALYSIS ───────────────────────────────────────────────────────
+var lastAt = 0;
+function analyzeThemes() {
+  if (!responses.length) return;
+  if (Date.now() - lastAt < 20000 && responses.length > 3) return;
+  document.getElementById('ail').style.display = 'flex';
+  document.getElementById('te').style.display = 'none';
+  var weighted = [];
+  responses.slice(-40).forEach(function(r) {
+    weighted.push(r.text);
+    if (r.verified && r.weight > 1) weighted.push(r.text);
+  });
+  var numbered = weighted.map(function(t,i){ return (i+1) + '. "' + t + '"'; }).join('\n');
+  var prompt = 'You are analyzing responses from learning scientists and CSCL researchers about the greatest challenge facing their fields in the next decade.\n\nResponses:\n' + numbered + '\n\nIdentify 5-7 major themes. Return ONLY valid JSON, no preamble, no markdown:\n{"themes":[{"label":"Theme Name","count":N,"summary":"5-7 word description"},...]}';
+  fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 800, messages: [{ role: 'user', content: prompt }] })
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(data) {
+    var raw = (data.content && data.content.find(function(b){ return b.type==='text'; })) || {};
+    var text = (raw.text || '').replace(/```json|```/g,'').trim();
+    var parsed = JSON.parse(text);
+    renderThemes(parsed.themes || []);
+    lastAt = Date.now();
+  })
+  .catch(function() {
+    var kw = ['equity','AI','technology','collaboration','scale','design','research','practice','policy','democracy'];
+    var fallback = kw.map(function(k) {
+      var count = responses.filter(function(r){ return r.text.toLowerCase().indexOf(k) >= 0; }).length;
+      return { label: k.charAt(0).toUpperCase()+k.slice(1), count: count, summary: 'keyword match' };
+    }).filter(function(t){ return t.count > 0; }).sort(function(a,b){ return b.count-a.count; }).slice(0,6);
+    renderThemes(fallback);
+  })
+  .finally(function() {
+    document.getElementById('ail').style.display = 'none';
+  });
+}
+
+function renderThemes(themes) {
+  var el = document.getElementById('tlist');
+  if (!themes.length) { document.getElementById('te').style.display = 'block'; el.innerHTML = ''; return; }
+  document.getElementById('te').style.display = 'none';
+  var mx = Math.max.apply(null, themes.map(function(t){ return t.count; }));
+  el.innerHTML = themes.map(function(t) {
+    var w = Math.round(t.count/mx*100);
+    return '<div class="trow"><div class="tname" title="'+esc(t.summary||'')+'">'+esc(t.label)+'</div>'
+      +'<div class="tbg"><div class="tfill" style="width:'+w+'%"></div></div>'
+      +'<div class="tn">'+t.count+'</div></div>';
+  }).join('');
+}
+
+// ─── EXCEL / CSV EXPORT ──────────────────────────────────────────────────────
+function unlockExport() {
+  var pw = document.getElementById('export-pw').value;
+  var errEl = document.getElementById('pw-error');
+  var btnEl = document.getElementById('export-buttons');
+  if (pw === 'Provcscl27') {
+    errEl.style.display = 'none';
+    btnEl.style.display = 'flex';
+    document.getElementById('export-pw').style.borderColor = 'var(--teal)';
+  } else {
+    errEl.style.display = 'block';
+    btnEl.style.display = 'none';
+    document.getElementById('export-pw').style.borderColor = '#e85d4a';
+  }
+}
+
+function checkExportPassword() {
+  return true;
+}
+
+function exportXLSX() {
+  if (!responses.length) { alert('No responses yet.'); return; }
+  // Refresh from Supabase first to ensure we have all responses
+  supaGet('responses')
+    .then(function(rows) {
+      if (Array.isArray(rows) && rows.length) {
+        responses = rows.map(function(r) {
+          return { id:r.id,ts:r.created_at,name:r.name||'',institution:r.institution||'',
+            role:r.role||'',location:r.location||'',verified:!!r.verified,weight:r.weight||1,
+            provocations:r.provocations?r.provocations.split('; ').filter(Boolean):[],text:r.text||''};
+        });
+      }
+      doExportXLSX();
+    })
+    .catch(function() { doExportXLSX(); });
+}
+function doExportXLSX() {
+  if (!responses.length) { alert('No responses yet.'); return; }
+  var wb = XLSX.utils.book_new();
+  var rows = [['ID','Timestamp','Name','Institution','Role','Location','Provocations Selected','LS/CSCL Verified','Publications Found','Weight','Response']];
+  responses.forEach(function(r) { rows.push([r.id,r.ts,r.name,r.institution||'',r.role,r.location,(r.provocations||[]).join('; '),r.verified?'Yes':'No',r.pubCount||0,r.weight||1,r.text]); });
+  var ws = XLSX.utils.aoa_to_sheet(rows);
+  ws['!cols'] = [{wch:14},{wch:22},{wch:20},{wch:28},{wch:20},{wch:22},{wch:40},{wch:16},{wch:16},{wch:8},{wch:90}];
+  XLSX.utils.book_append_sheet(wb, ws, 'Responses');
+  var rc = {}, lc = {};
+  responses.forEach(function(r){ rc[r.role]=(rc[r.role]||0)+1; if(r.location&&r.location!=='Not specified') lc[r.location]=(lc[r.location]||0)+1; });
+  var vCount = responses.filter(function(r){ return r.verified; }).length;
+  var wTotal = responses.reduce(function(s,r){ return s+(r.weight||1); }, 0);
+  var sum = [['SUMMARY'],['Total Responses',responses.length],['Verified LS/CSCL Scholars',vCount],['Weighted Total',wTotal],['Exported',new Date().toLocaleString()],[''],['ROLE BREAKDOWN'],['Role','Count']];
+  Object.keys(rc).sort(function(a,b){return rc[b]-rc[a];}).forEach(function(k){ sum.push([k,rc[k]]); });
+  sum.push([''],['GEOGRAPHIC BREAKDOWN'],['Location','Count']);
+  Object.keys(lc).sort(function(a,b){return lc[b]-lc[a];}).forEach(function(k){ sum.push([k,lc[k]]); });
+  var ws2 = XLSX.utils.aoa_to_sheet(sum);
+  ws2['!cols'] = [{wch:30},{wch:14}];
+  XLSX.utils.book_append_sheet(wb, ws2, 'Summary');
+  XLSX.writeFile(wb, 'CSCL_Symposium_Responses_' + new Date().toISOString().slice(0,10) + '.xlsx');
+}
+
+function exportCSV() {
+  if (!responses.length) { alert('No responses yet.'); return; }
+  var header = ['ID','Timestamp','Name','Institution','Role','Location','LS/CSCL Verified','Weight','Response'];
+  var rows = [header];
+  responses.forEach(function(r) {
+    rows.push([r.id,r.ts,r.name,r.institution||'',r.role,r.location,r.verified?'Yes':'No',r.weight||1,r.text].map(function(v){ return '"'+String(v).replace(/"/g,'""')+'"'; }));
+  });
+  var blob = new Blob([rows.map(function(r){ return r.join(','); }).join('\n')], {type:'text/csv'});
+  var a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+  a.download = 'CSCL_Symposium_' + new Date().toISOString().slice(0,10) + '.csv'; a.click();
+}
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+renderCards();
+updateAll();
+if (responses.length) analyzeThemes();
+
+loadFromSupabase();
+</script>
+</body>
+</html>
